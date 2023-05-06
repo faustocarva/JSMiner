@@ -14,8 +14,8 @@ public class JSParserTest {
         try {
             ClassLoader classLoader = getClass().getClassLoader();
             String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("helloworld.js").toURI())));
-            JSParser.parse(content);
-            Assert.assertTrue(true);
+            ECMAScriptParser.ProgramContext p = JSParser.parse(content);
+            Assert.assertNotNull(p);
         }
         catch(Exception e) {
             e.printStackTrace();
