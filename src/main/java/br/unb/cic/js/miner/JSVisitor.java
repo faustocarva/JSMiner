@@ -8,37 +8,34 @@ import br.unb.cic.js.miner.JavaScriptParser.FunctionDeclarationContext;
 import br.unb.cic.js.miner.JavaScriptParser.FunctionPropertyContext;
 import br.unb.cic.js.miner.JavaScriptParser.IdentifierContext;
 
-public class JsVisitor extends JavaScriptParserBaseVisitor<Void> {
+public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
-	int totalFunctions = 0;
-	int totalAsyncs = 0;
+	int totalFunctionDeclarations = 0;
+	int totalAsyncDeclarations = 0;
 
 	@Override
 	public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
-		totalFunctions++;
+		totalFunctionDeclarations++;
 		if (ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitFunctionDeclaration(ctx);
 	}
 
 	@Override
 	public Void visitArrowFunction(ArrowFunctionContext ctx) {
-		totalFunctions++;
+		totalFunctionDeclarations++;
 		if (ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitArrowFunction(ctx);
 	}
 
 	@Override
 	public Void visitAnonymousFunctionDecl(AnonymousFunctionDeclContext ctx) {
-		totalFunctions++;
+		totalFunctionDeclarations++;
 		if (ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitAnonymousFunctionDecl(ctx);
 	}
@@ -46,8 +43,7 @@ public class JsVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitFunctionProperty(FunctionPropertyContext ctx) {
 		if (ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitFunctionProperty(ctx);
 	}
@@ -55,8 +51,7 @@ public class JsVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitIdentifier(IdentifierContext ctx) {
 		if (ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitIdentifier(ctx);
 	}
@@ -64,8 +59,7 @@ public class JsVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitClassElementMethodDefinition(ClassElementMethodDefinitionContext ctx) {
 		if(ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitClassElementMethodDefinition(ctx);
 	}
@@ -73,19 +67,18 @@ public class JsVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitClassElementAssigment(ClassElementAssigmentContext ctx) {
 		if(ctx.Async() != null) {
-//			System.out.println(ctx.getText());
-			totalAsyncs++;
+			totalAsyncDeclarations++;
 		}
 		return super.visitClassElementAssigment(ctx);
 	}
 
 
-	public int getTotalFunctions() {
-		return totalFunctions;
+	public int getTotalFunctionDeclarations() {
+		return totalFunctionDeclarations;
 	}
 
-	public int getTotalAsyncs() {
-		return totalAsyncs;
+	public int getTotalAsyncDeclarations() {
+		return totalAsyncDeclarations;
 	}
 
 }
