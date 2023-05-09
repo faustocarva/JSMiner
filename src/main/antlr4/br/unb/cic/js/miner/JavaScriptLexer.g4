@@ -32,7 +32,7 @@ lexer grammar JavaScriptLexer;
 
 channels { ERROR }
 
-options { superClass=JavaScriptLexerBase; }
+options { superClass=br.unb.cic.js.miner.util.JavaScriptLexerBase; }
 
 // Insert here @header for C++ lexer.
 
