@@ -1,8 +1,7 @@
 package br.unb.cic.js.miner;
 
 public class App {
-
-    public static void main(String argsp[]) {
+    public static void main(String args[]) {
 
     }
 }
