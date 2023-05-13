@@ -1,6 +1,5 @@
 package br.unb.cic.js.miner;
 
-
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
@@ -27,8 +26,6 @@ public class JSParser {
         lexer.addErrorListener(new ExceptionBasedErrorListener());
         return lexer;
     }
-
-    private
 
     class ExceptionBasedErrorListener extends BaseErrorListener {
         @Override
