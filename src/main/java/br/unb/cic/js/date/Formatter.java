@@ -1,4 +1,4 @@
-package br.unb.cic.js;
+package br.unb.cic.js.date;
 
 import java.text.SimpleDateFormat;
 

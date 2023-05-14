@@ -1,5 +1,6 @@
 package br.unb.cic.js;
 
+import br.unb.cic.js.date.Formatter;
 import br.unb.cic.js.walker.Walker;
 import com.beust.jcommander.JCommander;
 import lombok.val;
