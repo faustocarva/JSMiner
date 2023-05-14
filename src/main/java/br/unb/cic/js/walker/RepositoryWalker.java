@@ -1,6 +1,8 @@
 package br.unb.cic.js.walker;
 
 import br.unb.cic.js.date.Interval;
+import br.unb.cic.js.miner.JSParser;
+import br.unb.cic.js.miner.JSVisitor;
 import lombok.Builder;
 import lombok.val;
 import org.eclipse.jgit.api.Git;
@@ -110,10 +112,18 @@ public class RepositoryWalker {
                         return !isDirectory && isJsFile;
                     }).collect(Collectors.toList());
 
+            val parser = new JSParser();
+            val visitor = new JSVisitor();
+
             for (Path p : files) {
                 val file = p.toFile();
 
-                // TODO: apply parser and get analytics about it
+                val content = new String(Files.readAllBytes(file.toPath()));
+                val program = parser.parse(content);
+
+                program.accept(visitor);
+
+                // TODO: make collections about the file
             }
 
         } catch (Exception ex) {
