@@ -27,7 +27,7 @@ public class JSParser {
         return lexer;
     }
 
-    class ExceptionBasedErrorListener extends BaseErrorListener {
+    static class ExceptionBasedErrorListener extends BaseErrorListener {
         @Override
         public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
             throw new ParseCancellationException(String.format("line: %d : %d - %s ", line, charPositionInLine, msg));
