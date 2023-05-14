@@ -9,6 +9,9 @@ public class Args {
     @Parameter(names = {"-d", "--directory"}, required = true, description = "The path to a/set of git repository(ies) containing JS code")
     public String directory = "";
 
+    @Parameter(names = {"-p", "--project"}, description = "Given the project flag it will only mine for that project")
+    public String project = "";
+
     @Parameter(names = {"-s", "--steps"}, description = "The delta interval through each commit")
     public Integer steps = 7;
 
