@@ -16,7 +16,6 @@ public class Interval {
     }
 
     public static long diff(Date d, Date e, Unit u) {
-
         long diff = Math.abs(d.getTime() - e.getTime());
 
         return u.unit.convert(diff, TimeUnit.MILLISECONDS);
