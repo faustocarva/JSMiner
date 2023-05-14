@@ -45,8 +45,8 @@ public class Walker {
             if (f.exists() && f.isDirectory()) {
                 List<Path> repositories = new ArrayList<>();
 
-                // checking a file attribute to see if it is a directory is slow, be careful with the amount of folders
-                // you'll be checking against.
+                // checking a file attribute to verify if it's a directory is slow, be careful with the amount of
+                // folders you'll be checking against.
 
                 if (project.isEmpty()) {
                     repositories.addAll(Files.find(p, 1, (path, attrs) -> {
@@ -70,8 +70,8 @@ public class Walker {
                     return;
                 }
 
-                for (Path projectPath: repositories) {
-                    logger.info("project: {}", projectPath);
+                for (Path repositoryPath: repositories) {
+                    logger.info("project: {}", repositoryPath);
                 }
             } else {
                 logger.warn("path {} does not exist or isn't a directory", p);
