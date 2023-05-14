@@ -25,13 +25,14 @@ public class App {
         try {
             val walker = Walker.builder()
                     .path(arguments.directory)
+                    .project(arguments.project)
                     .steps(arguments.steps)
                     .threads(arguments.threads)
                     .initialDate(Formatter.format.parse(arguments.initialDate))
                     .endDate(Formatter.format.parse(arguments.endDate))
                     .build();
 
-            walker.walk();
+            walker.traverse();
         } catch(ParseException ex) {
             ex.printStackTrace();
         }
