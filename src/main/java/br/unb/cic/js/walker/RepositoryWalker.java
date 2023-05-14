@@ -103,10 +103,11 @@ public class RepositoryWalker {
                     .stream()
                     .filter(filepath -> {
                         val file = filepath.toFile();
-                        val parts = file.toString().split("\\.");
 
                         val isDirectory = file.isDirectory();
-                        val isJsFile = parts[parts.length-1].equals("js");
+                        val isJsFile = Optional.ofNullable(file.toString())
+                                .filter(f -> f.contains("."))
+                                .map(f -> f.substring(f.lastIndexOf(".")).equals("js")).get();
 
                         return !isDirectory && isJsFile;
                     }).collect(Collectors.toList());
