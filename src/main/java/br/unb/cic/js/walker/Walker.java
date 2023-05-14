@@ -1,6 +1,5 @@
 package br.unb.cic.js.walker;
 
-import br.unb.cic.js.App;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
