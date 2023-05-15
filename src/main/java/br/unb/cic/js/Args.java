@@ -2,9 +2,6 @@ package br.unb.cic.js;
 
 import com.beust.jcommander.Parameter;
 
-import java.time.Instant;
-import java.time.Year;
-
 public class Args {
     @Parameter(names = {"-d", "--directory"}, required = true, description = "The path to a/set of git repository(ies) containing JS code")
     public String directory = "";
