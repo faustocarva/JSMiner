@@ -22,7 +22,6 @@ public class RepositoryWalkerTask implements Runnable {
 
     @Override
     public void run() {
-
         try {
             walker.traverse(interval.begin, interval.end, steps);
         } catch (Exception e) {
