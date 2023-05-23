@@ -1,14 +1,21 @@
 package br.unb.cic.js.date;
 
+import lombok.Builder;
+
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+@Builder
 public class Interval {
+
+    public final Date begin;
+
+    public final Date end;
 
     public enum Unit {
         Days(TimeUnit.DAYS);
 
-        private TimeUnit unit;
+        private final TimeUnit unit;
 
         Unit(TimeUnit u) {
             unit = u;
