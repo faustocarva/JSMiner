@@ -14,7 +14,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 
-public class JSParserTest {
+public class ParserTest {
 
     private JSParser parser;
 
@@ -80,7 +80,88 @@ public class JSParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
+            assertEquals(6, visitor.getTotalLetDeclarations());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
 
+    @Test
+    public void testConst() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Constants.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(5, visitor.getTotalConstDeclaration());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testModules() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Modules.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(5, visitor.getTotalExportDeclarations());
+            assertEquals(8, visitor.getTotalImportStatements());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testRest() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Rest.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(1, visitor.getTotalRestStatements());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testClass() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Classes.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(15, visitor.getTotalClassDeclarations());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testYield() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Generators.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(6, visitor.getTotalYieldDeclarations());
         }
         catch(Exception e) {
             e.printStackTrace();
