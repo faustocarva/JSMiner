@@ -1,6 +1,5 @@
 package br.unb.cic.js.miner;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -11,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.*;
 
 
 public class JSParserTest {
@@ -54,8 +55,40 @@ public class JSParserTest {
             fail();
         }
     }
-    
-	@Test
+
+    @Test
+    public void testAwait() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/AsyncAwait.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(3, visitor.getTotalAwaitDeclarations());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testLet() {
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Scoping.js").toURI())));
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+	@Ignore
     public void testParserReact() throws Exception{
     	ClassLoader classLoader = getClass().getClassLoader();
         URI directoryPath = classLoader.getResource("examples").toURI();

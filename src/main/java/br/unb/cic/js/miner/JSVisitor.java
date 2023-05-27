@@ -1,17 +1,18 @@
 package br.unb.cic.js.miner;
 
-import br.unb.cic.js.miner.JavaScriptParser.AnonymousFunctionDeclContext;
-import br.unb.cic.js.miner.JavaScriptParser.ArrowFunctionContext;
-import br.unb.cic.js.miner.JavaScriptParser.ClassElementAssigmentContext;
-import br.unb.cic.js.miner.JavaScriptParser.ClassElementMethodDefinitionContext;
-import br.unb.cic.js.miner.JavaScriptParser.FunctionDeclarationContext;
-import br.unb.cic.js.miner.JavaScriptParser.FunctionPropertyContext;
-import br.unb.cic.js.miner.JavaScriptParser.IdentifierContext;
+import br.unb.cic.js.miner.JavaScriptParser.*;
+import lombok.Getter;
 
+@Getter
 public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	int totalFunctionDeclarations = 0;
 	int totalAsyncDeclarations = 0;
+	int totalAwaitDeclarations = 0;
+	int totalLetDeclarations = 0;
+
+	int totalClassDeclarations = 0;
+	int totalYieldDeclarations = 0;
 
 	@Override
 	public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
@@ -49,13 +50,49 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	}
 
 	@Override
+	public Void visitLet_(Let_Context ctx) {
+		if (ctx.StrictLet() != null) {
+			totalLetDeclarations++;
+		}
+		if (ctx.NonStrictLet() != null) {
+			totalLetDeclarations++;
+		}
+
+		return super.visitLet_(ctx);
+	}
+
+	@Override
+	public Void visitYieldExpression(YieldExpressionContext ctx) {
+		if (ctx.yieldStatement() != null) {
+			totalYieldDeclarations++;
+		}
+		return super.visitYieldExpression(ctx);
+	}
+
+	@Override
+	public Void visitClassDeclaration(ClassDeclarationContext ctx) {
+		if (ctx.Class() != null) {
+			totalClassDeclarations++;
+		}
+		return super.visitClassDeclaration(ctx);
+	}
+
+	@Override
+	public Void visitAwaitExpression(AwaitExpressionContext ctx) {
+		if (ctx.Await() != null) {
+			totalAwaitDeclarations++;
+		}
+		return super.visitAwaitExpression(ctx);
+	}
+
+	@Override
 	public Void visitIdentifier(IdentifierContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations++;
 		}
 		return super.visitIdentifier(ctx);
 	}
-	
+
 	@Override
 	public Void visitClassElementMethodDefinition(ClassElementMethodDefinitionContext ctx) {
 		if(ctx.Async() != null) {
@@ -63,22 +100,13 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitClassElementMethodDefinition(ctx);
 	}
-	
+
 	@Override
 	public Void visitClassElementAssigment(ClassElementAssigmentContext ctx) {
 		if(ctx.Async() != null) {
 			totalAsyncDeclarations++;
 		}
 		return super.visitClassElementAssigment(ctx);
-	}
-
-
-	public int getTotalFunctionDeclarations() {
-		return totalFunctionDeclarations;
-	}
-
-	public int getTotalAsyncDeclarations() {
-		return totalAsyncDeclarations;
 	}
 
 }
