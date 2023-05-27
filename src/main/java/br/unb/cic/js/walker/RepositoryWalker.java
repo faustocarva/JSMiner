@@ -5,9 +5,11 @@ import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
 import lombok.Builder;
 import lombok.val;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +30,7 @@ public class RepositoryWalker {
     public final String project;
     public final Path path;
 
-    private final Repository repository;
+    private Repository repository;
 
     /**
      * Traverse the git project from an initial date to an end date.
@@ -40,6 +42,8 @@ public class RepositoryWalker {
      */
     public void traverse(Date initial, Date end, int steps) throws Exception {
         logger.info("{} -- processing project", project);
+
+        repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
         val git = new Git(repository);
         val head = repository.resolve(Constants.HEAD);
@@ -115,17 +119,22 @@ public class RepositoryWalker {
             val parser = new JSParser();
             val visitor = new JSVisitor();
 
+            var fileErrors = new Vector<String>();
+
             for (Path p : files) {
-                val file = p.toFile();
+                try {
+                    val file = p.toFile();
 
-                val content = new String(Files.readAllBytes(file.toPath()));
-                val program = parser.parse(content);
+                    val content = new String(Files.readAllBytes(file.toPath()));
+                    val program = parser.parse(content);
 
-                program.accept(visitor);
+                    program.accept(visitor);
+                } catch (ParseCancellationException ex) {
+                    fileErrors.add(p.toString());
+                }
 
                 // TODO: make collections about the file
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }

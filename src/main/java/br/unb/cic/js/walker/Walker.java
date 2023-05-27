@@ -88,6 +88,7 @@ public class Walker {
 
                     val walker = RepositoryWalker.builder()
                             .path(repositoryPath)
+                            //.project(repositoryPath.)
                             .build();
 
                     val report = Paths.get(r.toString(), repositoryPath.getFileName().toString() + ".csv");
@@ -117,7 +118,7 @@ public class Walker {
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-        } catch ( java.lang.InterruptedException | java.util.concurrent.ExecutionException ex) {
+        } catch (java.lang.InterruptedException | java.util.concurrent.ExecutionException ex) {
             logger.error("failed to execute a concurrent task");
             ex.printStackTrace();
         }
