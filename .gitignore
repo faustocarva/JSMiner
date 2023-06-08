@@ -1,8 +1,10 @@
 /target/
-.classpath
-.project
 .settings/*
 .idea/*
+.vscode/
+
+.classpath
+.project
 *.iml
 .antlr
 
