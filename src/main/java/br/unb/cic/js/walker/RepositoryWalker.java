@@ -3,6 +3,8 @@ package br.unb.cic.js.walker;
 import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
+import br.unb.cic.js.miner.metrics.Metric;
+import br.unb.cic.js.miner.metrics.Summary;
 import lombok.Builder;
 import lombok.val;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -32,6 +34,8 @@ public class RepositoryWalker {
 
     private Repository repository;
 
+    private List<Summary> summaries;
+
     /**
      * Traverse the git project from an initial date to an end date.
      *
@@ -40,8 +44,10 @@ public class RepositoryWalker {
      * @param steps
      * @throws Exception
      */
-    public void traverse(Date initial, Date end, int steps) throws Exception {
+    public List<Summary> traverse(Date initial, Date end, int steps) throws Exception {
         logger.info("{} -- processing project", project);
+
+        summaries = new ArrayList<>();
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
@@ -85,11 +91,14 @@ public class RepositoryWalker {
 
             if (previous == null || (Interval.diff(previous, current, Interval.Unit.Days) >= steps)) {
                 collect(head, current, commits);
+
                 previous = current;
             }
         }
 
         git.close();
+
+        return summaries;
     }
 
     /**
@@ -119,7 +128,9 @@ public class RepositoryWalker {
             val parser = new JSParser();
             val visitor = new JSVisitor();
 
-            var fileErrors = new Vector<String>();
+            var errors = new Vector<String>();
+
+            val metrics = new ArrayList<Metric>();
 
             for (Path p : files) {
                 try {
@@ -129,12 +140,38 @@ public class RepositoryWalker {
                     val program = parser.parse(content);
 
                     program.accept(visitor);
-                } catch (ParseCancellationException ex) {
-                    fileErrors.add(p.toString());
-                }
 
-                // TODO: make collections about the file
+                    visitor.getTotalAsyncDeclarations();
+                } catch (ParseCancellationException ex) {
+                    errors.add(p.toString());
+                }
             }
+
+            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
+            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
+            metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
+            metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());
+            metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations()).build());
+            metrics.add(Metric.builder().name("function-declarations").value(visitor.getTotalFunctionDeclarations()).build());
+            metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations()).build());
+            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
+            metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations()).build());
+            metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements()).build());
+            metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises()).build());
+            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom()).build());
+            metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters()).build());
+            metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements()).build());
+            metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
+            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
+            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
+
+            val summary = Summary.builder()
+                             .date(current)
+                             .revision(head.toString())
+                             .metrics(metrics)
+                             .build();
+
+            summaries.add(summary);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
