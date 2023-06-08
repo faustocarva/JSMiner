@@ -6,6 +6,9 @@ import lombok.Getter;
 @Getter
 public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
+	private static final String THEN = "then";
+	private static final String ALL = "all";
+	private static final String PROMISE = "Promise";
 	int totalFunctionDeclarations = 0;
 	int totalAsyncDeclarations = 0;
 	int totalAwaitDeclarations = 0;
@@ -16,6 +19,12 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	int totalExportDeclarations = 0;
 	int totalImportStatements = 0;
 	int totalRestStatements = 0;
+	int totalNewPromises = 0;
+	int totalPromiseAllAndThenIdiom = 0;
+	int totalArrayDestructuring = 0;
+	int totalObjectDestructuring = 0;
+	int totalDefaultParameters = 0;
+	int totalSpreadArguments = 0;
 
 	@Override
 	public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
@@ -143,4 +152,60 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		return super.visitClassElementAssigment(ctx);
 	}
 
+	@Override
+	public Void visitNewExpression(NewExpressionContext ctx) {
+		if (ctx.singleExpression().getText().equals(PROMISE)) {
+			totalNewPromises++;
+		}
+		return super.visitNewExpression(ctx);
+	}
+
+	@Override
+	public Void visitArgumentsExpression(ArgumentsExpressionContext ctx) {
+		if (ctx.singleExpression().getText().contains(PROMISE) && 
+			ctx.singleExpression().getText().contains(ALL) &&
+			ctx.singleExpression().getText().contains(THEN)) {
+			totalPromiseAllAndThenIdiom++;
+		}
+		return super.visitArgumentsExpression(ctx);
+	}
+
+	@Override
+	public Void visitAssignmentExpression(AssignmentExpressionContext ctx) {		
+		if (ctx.singleExpression().get(0) instanceof ArrayLiteralExpressionContext) {
+			totalArrayDestructuring++;
+		}else if(ctx.singleExpression().get(0) instanceof ObjectLiteralExpressionContext) {
+			totalObjectDestructuring++;
+		}
+		return super.visitAssignmentExpression(ctx);
+	}
+
+	@Override
+	public Void visitVariableDeclaration(VariableDeclarationContext ctx) {
+		if(ctx.singleExpression() != null && !ctx.assignable().isEmpty()) {
+			if (ctx.assignable().arrayLiteral() != null) {
+				totalArrayDestructuring++;
+			}
+			else if (ctx.assignable().objectLiteral() != null) {
+				totalObjectDestructuring++;
+			}
+		}
+		return super.visitVariableDeclaration(ctx);
+	}
+
+	@Override
+	public Void visitFormalParameterArg(FormalParameterArgContext ctx) {
+		if (ctx.singleExpression() != null) {
+			totalDefaultParameters++;
+		}
+		return super.visitFormalParameterArg(ctx);
+	}
+
+	@Override
+	public Void visitArgument(ArgumentContext ctx) {
+		if (ctx.Ellipsis() != null) {
+			totalSpreadArguments++;
+		}
+		return super.visitArgument(ctx);
+	}
 }

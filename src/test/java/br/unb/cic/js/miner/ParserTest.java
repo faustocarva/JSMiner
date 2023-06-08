@@ -5,7 +5,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,11 +25,17 @@ public class ParserTest {
         parser = new JSParser();
     }
 
+
+    private String loadContent(String file) throws IOException, URISyntaxException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource(file).toURI())));
+        return content;
+    }
+
 	@Ignore
     public void testParser() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("helloworld.js").toURI())));
+            String content = loadContent("helloworld.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -40,11 +48,10 @@ public class ParserTest {
         }
     }
     
-	@Ignore
+	@Test
     public void testAsync() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/AsyncAwait.js").toURI())));
+            String content = loadContent("examples/AsyncAwait.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -55,12 +62,70 @@ public class ParserTest {
             fail();
         }
     }
+	
+	@Test
+	public void testDestructuring() {
+		try {
+			String content = loadContent("examples/DestructuringAssignment.js");
+	        JavaScriptParser.ProgramContext p = parser.parse(content);
+	        JSVisitor visitor = new JSVisitor();
+	        p.accept(visitor);
+	        assertEquals(3, visitor.getTotalArrayDestructuring());
+	        assertEquals(3, visitor.getTotalObjectDestructuring());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+
+	}
+	
+	@Test
+	public void testDefaultParameters() {
+		try {
+			String content = loadContent("examples/DefaultParameter.js");
+	        JavaScriptParser.ProgramContext p = parser.parse(content);
+	        JSVisitor visitor = new JSVisitor();
+	        p.accept(visitor);
+	        assertEquals(1, visitor.getTotalDefaultParameters());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testSpreadArguments() {
+		try {
+			String content = loadContent("examples/Spread.js");
+	        JavaScriptParser.ProgramContext p = parser.parse(content);
+	        JSVisitor visitor = new JSVisitor();
+	        p.accept(visitor);
+	        assertEquals(1, visitor.getTotalSpreadArguments());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}	
+	}
+
+    @Test
+    public void testPromise(){
+        try {
+            String content = loadContent("examples/Promises.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(2, visitor.getTotalNewPromises());
+            assertEquals(1, visitor.getTotalPromiseAllAndThenIdiom());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
 
     @Test
     public void testAwait() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/AsyncAwait.js").toURI())));
+            String content = loadContent("examples/AsyncAwait.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -75,8 +140,7 @@ public class ParserTest {
     @Test
     public void testLet() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Scoping.js").toURI())));
+            String content = loadContent("examples/Scoping.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -91,8 +155,7 @@ public class ParserTest {
     @Test
     public void testConst() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Constants.js").toURI())));
+            String content = loadContent("examples/Constants.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -107,8 +170,7 @@ public class ParserTest {
     @Test
     public void testModules() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Modules.js").toURI())));
+            String content = loadContent("examples/Modules.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -124,8 +186,7 @@ public class ParserTest {
     @Test
     public void testRest() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Rest.js").toURI())));
+            String content = loadContent("examples/Rest.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -140,8 +201,7 @@ public class ParserTest {
     @Test
     public void testClass() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Classes.js").toURI())));
+            String content = loadContent("examples/Classes.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
@@ -156,8 +216,7 @@ public class ParserTest {
     @Test
     public void testYield() {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource("examples/Generators.js").toURI())));
+            String content = loadContent("examples/Generators.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
