@@ -7,7 +7,6 @@ import lombok.Builder;
  */
 @Builder
 public class Metric {
-
     public final String name;
 
     public Integer value;

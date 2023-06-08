@@ -1,11 +1,10 @@
 package br.unb.cic.js.miner.metrics;
 
-import java.util.Date;
-import java.util.List;
-
 import lombok.Builder;
 import lombok.val;
-import lombok.var;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * 
@@ -20,7 +19,7 @@ public class Summary {
     public final List<Metric> metrics;
 
     public String head() {
-        var h = new StringBuilder();
+        val h = new StringBuilder();
 
         h.append("project,date,revision");
 
