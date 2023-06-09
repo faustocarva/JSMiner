@@ -46,8 +46,9 @@ public class RepositoryWalkerTask implements Runnable {
             val writer = new BufferedWriter(new FileWriter(report.toFile()));
 
             writer.write(content.toString());
-            writer.close();
+            writer.flush();
 
+            writer.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
