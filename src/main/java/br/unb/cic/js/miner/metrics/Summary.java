@@ -47,16 +47,6 @@ public class Summary {
         return h.toString();
     }
 
-    public String head() {
-        val h = new StringBuilder();
-
-        h.append("project,date,revision");
-
-        metrics.forEach(m -> h.append(",").append(m.name));
-
-        return h.toString();
-    }
-
     public String values() {
         val l = new StringBuilder();
 
