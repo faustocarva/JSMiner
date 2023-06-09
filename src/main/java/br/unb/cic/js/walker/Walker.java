@@ -1,12 +1,15 @@
 package br.unb.cic.js.walker;
 
 import br.unb.cic.js.date.Interval;
+import br.unb.cic.js.miner.metrics.Summary;
 import lombok.Builder;
 import lombok.val;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,11 +77,16 @@ public class Walker {
                     return;
                 }
 
-                // create a report directory that will contain the results
+                // create a report directory and file that will contain the results
                 val r = Paths.get(p.toAbsolutePath().getParent().toString(), "js-miner-out");
                 if (!r.toFile().exists()) {
                     Files.createDirectory(r);
                 }
+
+                val results = r.resolve("results.csv");
+                val writer = new BufferedWriter(new FileWriter(results.toFile()));
+
+                writer.write(Summary.header());
 
                 val pool = Executors.newFixedThreadPool(threads);
                 val tasks = new Vector<Future>();
@@ -102,6 +110,7 @@ public class Walker {
 
                     val task = RepositoryWalkerTask.builder()
                             .walker(walker)
+                            .results(writer)
                             .report(report)
                             .interval(interval)
                             .steps(steps)
@@ -116,6 +125,10 @@ public class Walker {
                 }
 
                 pool.shutdown();
+
+                // flush any pending text and close the results.csv writer
+                writer.flush();
+                writer.close();
             } else {
                 logger.warn("path {} does not exist or isn't a directory", p);
             }
