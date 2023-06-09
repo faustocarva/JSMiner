@@ -31,7 +31,7 @@ public class Summary {
     public String values() {
         val l = new StringBuilder();
 
-        metrics.forEach(m -> l.append(",").append(m.value.toString()));
+        metrics.forEach(m -> l.append(m.value.toString()).append(","));
 
         return l.toString();
     }
