@@ -132,6 +132,10 @@ public class RepositoryWalker {
 
             val metrics = new ArrayList<Metric>();
 
+            metrics.add(Metric.builder().name("project").value(project).build());
+            metrics.add(Metric.builder().name("date").value(current.toString()).build());
+            metrics.add(Metric.builder().name("revision").value(head.toString()).build());
+
             for (Path p : files) {
                 try {
                     val file = p.toFile();
