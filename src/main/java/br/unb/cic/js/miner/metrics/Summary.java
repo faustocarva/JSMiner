@@ -18,6 +18,35 @@ public class Summary {
 
     public final List<Metric> metrics;
 
+    /**
+     * Returns a string containing the header for the CSV report with default fields
+     * @return
+     */
+    public static String header() {
+        val h = new StringBuilder();
+
+        h.append("project,date,revision")
+                .append(",async-declarations")
+                .append(",async-declarations")
+                .append(",await-declarations")
+                .append(",const-declarations")
+                .append(",class-declarations")
+                .append(",function-declarations")
+                .append(",let-declarations")
+                .append(",export-declarations")
+                .append(",yield-declarations")
+                .append(",import-statements")
+                .append(",promise-declarations")
+                .append(",promise-all-and-then")
+                .append(",default-parameters")
+                .append(",rest-statements")
+                .append(",spread-arguments")
+                .append(",array-destructuring")
+                .append(",object-destructuring\n");
+
+        return h.toString();
+    }
+
     public String head() {
         val h = new StringBuilder();
 
