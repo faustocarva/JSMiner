@@ -3,7 +3,6 @@ package br.unb.cic.js.walker;
 import br.unb.cic.js.date.Interval;
 import lombok.Builder;
 import lombok.val;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +38,10 @@ public class RepositoryWalkerTask implements Runnable {
             content.append(summaries.get(0).head())
                    .append("\n");
             
-            summaries.stream()
-                     .forEach(s -> {
-                        content.append(s.process())
+            summaries.forEach(s -> {
+                        content.append(s.values())
                        .append("\n");
-                     });
+            });
 
             val writer = new BufferedWriter(new FileWriter(report.toFile()));
 

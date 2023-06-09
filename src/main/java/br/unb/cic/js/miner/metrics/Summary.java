@@ -23,21 +23,15 @@ public class Summary {
 
         h.append("project,date,revision");
 
-        metrics.stream()
-               .forEach(m -> {
-                    h.append(",").append(m.name);
-               });
+        metrics.forEach(m -> h.append(",").append(m.name));
 
         return h.toString();
     }
 
-    public String process() {
+    public String values() {
         val l = new StringBuilder();
 
-        metrics.stream()
-               .forEach(m -> {
-                    l.append(",").append(m.value.toString());
-                });
+        metrics.forEach(m -> l.append(",").append(m.value.toString()));
 
         return l.toString();
     }
