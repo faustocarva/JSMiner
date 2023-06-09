@@ -33,7 +33,7 @@ public class Walker {
     public void traverse() {
         logger.info("initializing git traversal");
         logger.info(
-                "path: {}\nproject: {}\nsteps: {}\nthreads: {}\ninitial date: {}\nend date: {}",
+                "path: {} | project: {} | steps: {} | threads: {} | initial date: {} | end date: {}",
                 path,
                 project,
                 steps,
@@ -84,11 +84,14 @@ public class Walker {
                 val tasks = new Vector<Future>();
 
                 for (Path repositoryPath: repositories) {
-                    logger.info("project: {}", repositoryPath);
+                    val repositoryPathSplit = repositoryPath.toString().split("/");
+                    val repositoryName = repositoryPathSplit [repositoryPathSplit .length-1];
+
+                    logger.info("project: {}", repositoryName);
 
                     val walker = RepositoryWalker.builder()
                             .path(repositoryPath)
-                            //.project(repositoryPath.)
+                            .project(repositoryName)
                             .build();
 
                     val report = Paths.get(r.toString(), repositoryPath.getFileName().toString() + ".csv");
