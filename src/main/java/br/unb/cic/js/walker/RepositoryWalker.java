@@ -1,5 +1,6 @@
 package br.unb.cic.js.walker;
 
+import br.unb.cic.js.date.Formatter;
 import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
@@ -105,11 +106,10 @@ public class RepositoryWalker {
      * Collect metrics about a given commit interval
      */
     private void collect(ObjectId head, Date current, Map<Date, ObjectId> commits) {
-        val start = System.currentTimeMillis();
         val id = commits.get(current);
 
         try (Git git = new Git(repository)) {
-            val commit = repository.parseCommit(id);
+            val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
 
             git.checkout().setName(id.getName()).call();
 
@@ -133,8 +133,8 @@ public class RepositoryWalker {
             val metrics = new ArrayList<Metric>();
 
             metrics.add(Metric.builder().name("project").value(project).build());
-            metrics.add(Metric.builder().name("date").value(current.toString()).build());
-            metrics.add(Metric.builder().name("revision").value(head.toString()).build());
+            metrics.add(Metric.builder().name("date (dd-mm-yyyy)").value(Formatter.format.format(current)).build());
+            metrics.add(Metric.builder().name("revision").value(commit).build());
 
             for (Path p : files) {
                 try {
@@ -145,7 +145,6 @@ public class RepositoryWalker {
 
                     program.accept(visitor);
 
-                    visitor.getTotalAsyncDeclarations();
                 } catch (ParseCancellationException ex) {
                     errors.add(p.toString());
                 }
