@@ -135,6 +135,7 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("project").value(project).build());
             metrics.add(Metric.builder().name("date (dd-mm-yyyy)").value(Formatter.format.format(current)).build());
             metrics.add(Metric.builder().name("revision").value(commit).build());
+            metrics.add(Metric.builder().name("files").value(files.size()).build());
 
             for (Path p : files) {
                 try {
@@ -150,7 +151,6 @@ public class RepositoryWalker {
                 }
             }
 
-            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
             metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
             metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
             metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());

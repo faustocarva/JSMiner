@@ -25,8 +25,7 @@ public class Summary {
     public static String header() {
         val h = new StringBuilder();
 
-        h.append("project,date,revision")
-                .append(",async-declarations")
+        h.append("project,date,revision,files")
                 .append(",async-declarations")
                 .append(",await-declarations")
                 .append(",const-declarations")
