@@ -39,8 +39,23 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertTrue(visitor.getTotalFunctionDeclarations() > 0);
+            assertTrue(visitor.getTotalArrowDeclarations() > 0);
             assertNotNull(p);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testStatments() {
+        try {
+            String content = loadContent("examples/ArrowFunctions.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(10, visitor.getTotalStatements());
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -254,7 +269,7 @@ public class ParserTest {
 	            assertNotNull(p);
 	            JSVisitor visitor = new JSVisitor();
 	            p.accept(visitor);
-	            totalFunctionDeclarations += visitor.getTotalFunctionDeclarations();
+	            totalFunctionDeclarations += visitor.getTotalArrowDeclarations();
 	            totalAsyncDeclarations += visitor.getTotalAsyncDeclarations();
 			} catch (Throwable e) {
 				errors++;
