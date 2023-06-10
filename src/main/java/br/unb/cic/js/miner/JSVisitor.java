@@ -2,6 +2,9 @@ package br.unb.cic.js.miner;
 
 import br.unb.cic.js.miner.JavaScriptParser.*;
 import lombok.Getter;
+import lombok.val;
+
+import java.util.ArrayList;
 
 @Getter
 public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
@@ -9,7 +12,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String THEN = "then";
 	private static final String ALL = "all";
 	private static final String PROMISE = "Promise";
-	int totalFunctionDeclarations = 0;
+	int totalArrowDeclarations = 0;
 	int totalAsyncDeclarations = 0;
 	int totalAwaitDeclarations = 0;
 	int totalLetDeclarations = 0;
@@ -25,10 +28,51 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	int totalObjectDestructuring = 0;
 	int totalDefaultParameters = 0;
 	int totalSpreadArguments = 0;
+	int totalStatements = 0;
+
+	@Override
+	public Void visitStatement(StatementContext ctx) {
+		val statements = new ArrayList<Boolean>();
+
+		statements.add(ctx.variableStatement() != null);
+		statements.add(ctx.importStatement() != null);
+		statements.add(ctx.importStatement() != null);
+		statements.add(ctx.block() != null);
+		statements.add(ctx.exportStatement() != null);
+		statements.add(ctx.emptyStatement_() != null);
+		statements.add(ctx.classDeclaration() != null);
+		statements.add(ctx.expressionStatement() != null);
+		statements.add(ctx.ifStatement() != null);
+		statements.add(ctx.iterationStatement() != null);
+		statements.add(ctx.continueStatement() != null);
+		statements.add(ctx.breakStatement() != null);
+		statements.add(ctx.returnStatement() != null);
+		statements.add(ctx.yieldStatement() != null);
+		statements.add(ctx.withStatement() != null);
+		statements.add(ctx.labelledStatement() != null);
+		statements.add(ctx.switchStatement()!= null);
+		statements.add(ctx.throwStatement() != null);
+		statements.add(ctx.tryStatement() != null);
+		statements.add(ctx.debuggerStatement() != null);
+		statements.add(ctx.functionDeclaration() != null);
+
+		if (statements.stream().reduce((m, n) -> m || n).orElse(false)) {
+			totalStatements++;
+		}
+
+		return super.visitStatement(ctx);
+	}
+
+	@Override
+	public Void visitStatementList(StatementListContext ctx) {
+		if (ctx.statement() != null) {
+			totalStatements++;
+		}
+		return super.visitStatementList(ctx);
+	}
 
 	@Override
 	public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
-		totalFunctionDeclarations++;
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations++;
 		}
@@ -37,7 +81,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitArrowFunction(ArrowFunctionContext ctx) {
-		totalFunctionDeclarations++;
+		totalArrowDeclarations++;
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations++;
 		}
@@ -46,7 +90,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitAnonymousFunctionDecl(AnonymousFunctionDeclContext ctx) {
-		totalFunctionDeclarations++;
+		totalArrowDeclarations++;
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations++;
 		}

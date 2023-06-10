@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.val;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -111,6 +112,7 @@ public class RepositoryWalker {
         try (Git git = new Git(repository)) {
             val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
 
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
             git.checkout().setName(id.getName()).call();
 
             val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
@@ -155,7 +157,7 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
             metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());
             metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations()).build());
-            metrics.add(Metric.builder().name("function-declarations").value(visitor.getTotalFunctionDeclarations()).build());
+            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations()).build());
             metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations()).build());
             metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
             metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations()).build());
@@ -167,6 +169,7 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
             metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
             metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
+            metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements()).build());
 
             val summary = Summary.builder()
                              .date(current)

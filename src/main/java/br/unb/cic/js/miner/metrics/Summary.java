@@ -30,7 +30,7 @@ public class Summary {
                 .append(",await-declarations")
                 .append(",const-declarations")
                 .append(",class-declarations")
-                .append(",function-declarations")
+                .append(",arrow-function-declarations")
                 .append(",let-declarations")
                 .append(",export-declarations")
                 .append(",yield-declarations")
@@ -41,7 +41,8 @@ public class Summary {
                 .append(",rest-statements")
                 .append(",spread-arguments")
                 .append(",array-destructuring")
-                .append(",object-destructuring\n");
+                .append(",object-destructuring")
+                .append(",statements\n");
 
         return h.toString();
     }
