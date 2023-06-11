@@ -16,7 +16,7 @@ public class Args {
     public Integer threads = 1;
 
     @Parameter(names = {"-id", "--initial-date"}, description = "When to start walking a project (dd-mm-yyyy)")
-    public String initialDate = "01-01-2014";
+    public String initialDate = "01-06-2013";
 
     @Parameter(names = {"-ed", "--end-date"}, description = "When to stop walking the project (dd-mm-yyyy)")
     public String endDate = "30-06-2023";
