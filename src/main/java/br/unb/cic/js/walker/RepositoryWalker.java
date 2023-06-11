@@ -62,6 +62,11 @@ public class RepositoryWalker {
 
         val branch = branches.get(true);
 
+        if (branch == null) {
+            logger.error("{} -- failed to get the project main branch", project);
+            return summaries;
+        }
+
         HashMap<Date, ObjectId> commits = new HashMap<>();
         List<Date> commitDates = new ArrayList<>();
 

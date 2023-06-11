@@ -47,8 +47,10 @@ public class RepositoryWalkerTask implements Runnable {
             writer.write(content.toString());
             writer.flush();
 
-            results.write(content.toString());
-            results.flush();
+            synchronized (results) {
+                results.write(content.toString());
+                results.flush();
+            }
 
             writer.close();
         } catch (Exception e) {
