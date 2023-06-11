@@ -60,7 +60,7 @@ public class RepositoryWalker {
         branches.put(repository.resolve("refs/heads/master") != null, repository.resolve("refs/heads/master"));
         branches.put(repository.resolve("refs/heads/main") != null, repository.resolve("refs/heads/main"));
 
-        val branch = branches.get(true);
+        val branch = branches.getOrDefault(true, head);
 
         if (branch == null) {
             logger.error("{} -- failed to get the project main branch", project);
