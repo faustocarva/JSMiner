@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.val;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -54,15 +55,21 @@ public class RepositoryWalker {
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
         val git = new Git(repository);
-        val head = repository.resolve(Constants.HEAD);
 
-        Map<Boolean, AnyObjectId> branches = new HashMap<>();
-        branches.put(repository.resolve("refs/heads/master") != null, repository.resolve("refs/heads/master"));
-        branches.put(repository.resolve("refs/heads/main") != null, repository.resolve("refs/heads/main"));
+        List<Ref> allBranches = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
+        String mainBranch = null;
+        for (Ref branch : allBranches) {
+            if (branch.getName().equals("refs/remotes/origin/HEAD")) {
+                mainBranch = branch.getTarget().getName().substring("refs/remotes/origin/".length());
+                break;
+            }
+        }
 
-        val branch = branches.getOrDefault(true, head);
+        val head = repository.resolve("refs/heads/" + mainBranch);
 
-        if (branch == null) {
+        if (mainBranch != null) {
+            git.checkout().setName(mainBranch).call();
+        } else {
             logger.error("{} -- failed to get the project main branch", project);
             return summaries;
         }
@@ -70,8 +77,9 @@ public class RepositoryWalker {
         HashMap<Date, ObjectId> commits = new HashMap<>();
         List<Date> commitDates = new ArrayList<>();
 
-        // fill the commits map with commits that will be analyzed given that they belong to the defined interval
-        for (RevCommit commit : git.log().add(branch).call()) {
+        // fill the commits map with commits that will be analyzed given that they
+        // belong to the defined interval
+        for (RevCommit commit : git.log().add(head).call()) {
             PersonIdent author = commit.getAuthorIdent();
             Date current = author.getWhen();
 
@@ -162,25 +170,30 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
             metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());
             metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations()).build());
-            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations()).build());
+            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations())
+                    .build());
             metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations()).build());
-            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
+            metrics.add(
+                    Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
             metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations()).build());
             metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements()).build());
             metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises()).build());
-            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom()).build());
+            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom())
+                    .build());
             metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters()).build());
             metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements()).build());
             metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
-            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
-            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
+            metrics.add(
+                    Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
+            metrics.add(
+                    Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
             metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements()).build());
 
             val summary = Summary.builder()
-                             .date(current)
-                             .revision(head.toString())
-                             .metrics(metrics)
-                             .build();
+                    .date(current)
+                    .revision(head.toString())
+                    .metrics(metrics)
+                    .build();
 
             summaries.add(summary);
         } catch (Exception ex) {
