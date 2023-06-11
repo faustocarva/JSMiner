@@ -64,7 +64,9 @@ public class Walker {
                     }).collect(Collectors.toList()));
                 } else {
                     repositories.addAll(Files.find(p, 1, (path, attrs) -> {
-                        val isEqualPath = path.toString().equals(project);
+                        val pathParts = path.toString().split("/");
+
+                        val isEqualPath = pathParts[pathParts.length-1].equals(project);
                         val isDirectory = attrs.isDirectory();
                         val isGitDirectory = path.resolve(".git").toFile().isDirectory();
 
@@ -135,7 +137,7 @@ public class Walker {
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (java.lang.InterruptedException | java.util.concurrent.ExecutionException ex) {
-            logger.error("failed to execute a concurrent task");
+            logger.error("failed to execute a concurrent task, reason {}", ex.getMessage());
             ex.printStackTrace();
         }
     }
