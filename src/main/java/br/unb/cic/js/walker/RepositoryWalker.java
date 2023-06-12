@@ -12,7 +12,9 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
@@ -56,23 +58,25 @@ public class RepositoryWalker {
 
         val git = new Git(repository);
 
-        List<Ref> allBranches = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
-        String mainBranch = null;
-        for (Ref branch : allBranches) {
-            if (branch.getName().equals("refs/remotes/origin/HEAD")) {
-                mainBranch = branch.getTarget().getName().substring("refs/remotes/origin/".length());
-                break;
-            }
-        }
+        val branches = git.branchList()
+                .setListMode(ListBranchCommand.ListMode.REMOTE)
+                .call()
+                .stream()
+                .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
+                .findFirst();
 
-        val head = repository.resolve("refs/heads/" + mainBranch);
+        var mainBranch = "";
 
-        if (mainBranch != null) {
-            git.checkout().setName(mainBranch).call();
+        if (branches.isPresent()) {
+           mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
         } else {
             logger.error("{} -- failed to get the project main branch", project);
             return summaries;
         }
+
+        git.checkout().setName(mainBranch).call();
+
+        val head = repository.resolve("refs/heads/" + mainBranch);
 
         HashMap<Date, ObjectId> commits = new HashMap<>();
         List<Date> commitDates = new ArrayList<>();
@@ -91,10 +95,10 @@ public class RepositoryWalker {
 
         Collections.sort(commitDates);
 
-        logger.info("{} -- number of commits {} ", project, commits.size());
-
         long traversed = 0;
         long total = commitDates.size();
+
+        logger.info("{} -- number of commits {} ", project, total);
 
         Date previous = null;
 
