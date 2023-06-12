@@ -13,7 +13,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -78,14 +77,14 @@ public class RepositoryWalker {
 
         val head = repository.resolve("refs/heads/" + mainBranch);
 
-        val commits = new HashMap<>();
+        val commits = new HashMap<Date, ObjectId>();
         val commitDates = new ArrayList<Date>();
 
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
         for (RevCommit commit : git.log().add(head).call()) {
-            PersonIdent author = commit.getAuthorIdent();
-            Date current = author.getWhen();
+            val author = commit.getAuthorIdent();
+            val current = author.getWhen();
 
             if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
                 commitDates.add(current);
@@ -95,8 +94,8 @@ public class RepositoryWalker {
 
         Collections.sort(commitDates);
 
-        long traversed = 0;
-        long total = commitDates.size();
+        var traversed = 0;
+        var total = commitDates.size();
 
         logger.info("{} -- number of commits {} ", project, total);
 
