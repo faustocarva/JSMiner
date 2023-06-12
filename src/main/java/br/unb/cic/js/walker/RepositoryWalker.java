@@ -79,7 +79,7 @@ public class RepositoryWalker {
         val head = repository.resolve("refs/heads/" + mainBranch);
 
         val commits = new HashMap<>();
-        val commitDates = new ArrayList<>();
+        val commitDates = new ArrayList<Date>();
 
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
