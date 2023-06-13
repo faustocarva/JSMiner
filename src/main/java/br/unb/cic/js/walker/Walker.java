@@ -80,12 +80,12 @@ public class Walker {
                 }
 
                 // create a report directory and file that will contain the results
-                val r = Paths.get(p.toAbsolutePath().getParent().toString(), "js-miner-out");
-                if (!r.toFile().exists()) {
-                    Files.createDirectory(r);
+                val output = Paths.get(p.toAbsolutePath().getParent().toString(), "js-miner-out");
+                if (!output.toFile().exists()) {
+                    Files.createDirectory(output);
                 }
 
-                val results = r.resolve("results.csv");
+                val results = output.resolve("results.csv");
                 val writer = new BufferedWriter(new FileWriter(results.toFile()));
 
                 writer.write(Summary.header());
@@ -95,7 +95,7 @@ public class Walker {
 
                 for (Path repositoryPath: repositories) {
                     val repositoryPathSplit = repositoryPath.toString().split("/");
-                    val repositoryName = repositoryPathSplit [repositoryPathSplit .length-1];
+                    val repositoryName = repositoryPathSplit[repositoryPathSplit .length-1];
 
                     logger.info("project: {}", repositoryName);
 
@@ -104,7 +104,7 @@ public class Walker {
                             .project(repositoryName)
                             .build();
 
-                    val report = Paths.get(r.toString(), repositoryPath.getFileName().toString() + ".csv");
+
                     val interval = Interval.builder()
                             .begin(initialDate)
                             .end(endDate)
@@ -113,7 +113,7 @@ public class Walker {
                     val task = RepositoryWalkerTask.builder()
                             .walker(walker)
                             .results(writer)
-                            .report(report)
+                            .output(output)
                             .interval(interval)
                             .steps(steps)
                             .build();

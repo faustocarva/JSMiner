@@ -165,7 +165,7 @@ public class RepositoryWalker {
                     program.accept(visitor);
 
                 } catch (ParseCancellationException ex) {
-                    errors.put(p.toString(), ex.getMessage());
+                    errors.put(p.toString()+"-"+commit, ex.getMessage());
                 }
             }
 
