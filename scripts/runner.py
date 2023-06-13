@@ -9,9 +9,6 @@ memory_limit = 13 * 1024
 
 repositories = [name for name in os.listdir(dir) if os.path.isdir(os.path.join(dir, name))]
 
-for repo in repositories:
-
-    project = repo
-
-    command = f"java -Xmx{memory_limit}m -jar {jar_path} -d {dir} -p {project}"
+for repository in repositories:
+    command = f"java -Xmx{memory_limit}m -jar {jar_path} -d {dir} -p {repository}"
     os.system(command)
