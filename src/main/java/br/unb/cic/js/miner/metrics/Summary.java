@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.val;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -17,6 +18,9 @@ public class Summary {
     private final String revision; // commit hash
 
     public final List<Metric> metrics;
+
+    // Map of files to errors that ocurred when parsing or visiting
+    public final HashMap<String, String> errors;
 
     /**
      * Returns a string containing the header for the CSV report with default fields
