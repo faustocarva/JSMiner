@@ -4,12 +4,12 @@ import os
 import stat
 import sys
 
-#python3 runner.py /path/to/directory/
+#python3 runner.py /path/to/directory/ /path/to/file.csv
 
 cwd = sys.argv[1]
 clear = []
 count = 1
-with open("projects.csv",newline='') as f:
+with open(sys.argv[2],newline='') as f:
     projects = csv.reader(f, delimiter=',')
     for project in projects:
         if project[1] == "repository_name":
