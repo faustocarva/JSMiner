@@ -146,7 +146,7 @@ public class RepositoryWalker {
             val parser = new JSParser();
             val visitor = new JSVisitor();
 
-            var errors = new Vector<String>();
+            var errors = new HashMap<String, String>();
 
             val metrics = new ArrayList<Metric>();
 
@@ -165,7 +165,7 @@ public class RepositoryWalker {
                     program.accept(visitor);
 
                 } catch (ParseCancellationException ex) {
-                    errors.add(p.toString());
+                    errors.put(p.toString(), ex.getMessage());
                 }
             }
 
@@ -191,6 +191,7 @@ public class RepositoryWalker {
                     .date(current)
                     .revision(head.toString())
                     .metrics(metrics)
+                    .errors(errors)
                     .build();
 
             summaries.add(summary);
