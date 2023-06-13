@@ -34,7 +34,7 @@ public class RepositoryWalkerTask implements Runnable {
 
             // build report and report errors file
             val reportFile = Paths.get(output.toString(), walker.project + ".csv");
-            val reportErrors = Paths.get(output.toString(), walker.project + "-errors.csv");
+            val reportErrors = Paths.get(output.toString(), walker.project + "-errors.txt");
 
             reportFile.toFile().createNewFile();
             reportErrors.toFile().createNewFile();
