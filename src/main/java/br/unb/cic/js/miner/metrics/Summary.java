@@ -46,6 +46,7 @@ public class Summary {
                 .append(",spread-arguments")
                 .append(",array-destructuring")
                 .append(",object-destructuring")
+                .append(",errors")
                 .append(",statements\n");
 
         return h.toString();

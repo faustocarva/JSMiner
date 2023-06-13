@@ -185,6 +185,7 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
             metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
             metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
+            metrics.add(Metric.builder().name("errors").value(errors.size()).build());
             metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements()).build());
 
             val summary = Summary.builder()

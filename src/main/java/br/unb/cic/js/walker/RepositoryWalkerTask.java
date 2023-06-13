@@ -50,7 +50,7 @@ public class RepositoryWalkerTask implements Runnable {
                             errors.append(k)
                                     .append("\n")
                                     .append(v)
-                                    .append("-----------------------\n");
+                                    .append("\n-----------------------\n");
                         });
             });
 
