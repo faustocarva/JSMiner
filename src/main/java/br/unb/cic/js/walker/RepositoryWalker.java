@@ -8,7 +8,6 @@ import br.unb.cic.js.miner.metrics.Metric;
 import br.unb.cic.js.miner.metrics.Summary;
 import lombok.Builder;
 import lombok.val;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
@@ -23,6 +22,8 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +39,7 @@ public class RepositoryWalker {
 
     private Repository repository;
 
-    private List<Summary> summaries;
+    private final List<Summary> summaries = new ArrayList<>();
 
     /**
      * Traverse the git project from an initial date to an end date.
@@ -50,8 +51,6 @@ public class RepositoryWalker {
      */
     public List<Summary> traverse(Date initial, Date end, int steps) throws Exception {
         logger.info("{} -- processing project", project);
-
-        summaries = new ArrayList<>();
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
@@ -80,6 +79,8 @@ public class RepositoryWalker {
         val commits = new HashMap<Date, ObjectId>();
         val commitDates = new ArrayList<Date>();
 
+        Date previous = null;
+
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
         for (RevCommit commit : git.log().add(head).call()) {
@@ -87,7 +88,13 @@ public class RepositoryWalker {
             val current = author.getWhen();
 
             if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
-                commitDates.add(current);
+                // only add commits that fit the interval
+                if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
+                    commitDates.add(current);
+
+                    previous = current;
+                }
+
                 commits.put(current, commit.toObjectId());
             }
         }
@@ -95,23 +102,18 @@ public class RepositoryWalker {
         Collections.sort(commitDates);
 
         var traversed = 0;
-        var total = commitDates.size();
 
-        logger.info("{} -- number of commits {} ", project, total);
+        val totalGroups = commitDates.size();
+        val totalCommits = commits.size();
 
-        Date previous = null;
+        logger.info("{} -- number of commits {} ", project, totalCommits);
+        logger.info("{} -- number of groups {} ", project, totalGroups);
 
         for (Date current : commitDates) {
-            if (traversed % 500 == 0) {
-                logger.info("{} -- visiting commit {} of {}", project, traversed, total);
-            }
             traversed++;
+            logger.info("{} -- visiting commit group {} of {}", project, traversed, totalGroups);
 
-            if (previous == null || (Interval.diff(previous, current, Interval.Unit.Days) >= steps)) {
-                collect(head, current, commits);
-
-                previous = current;
-            }
+            collect(head, current, commits);
         }
 
         git.close();
@@ -155,19 +157,33 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("revision").value(commit).build());
             metrics.add(Metric.builder().name("files").value(files.size()).build());
 
+            val cores = Runtime.getRuntime().availableProcessors();
+            val tasks = new ArrayList<Future>();
+            val pool = Executors.newFixedThreadPool(cores);
+
             for (Path p : files) {
-                try {
-                    val file = p.toFile();
+                Runnable task = () -> {
+                    try {
+                        val file = p.toFile();
 
-                    val content = new String(Files.readAllBytes(file.toPath()));
-                    val program = parser.parse(content);
+                        val content = new String(Files.readAllBytes(file.toPath()));
+                        val program = parser.parse(content);
 
-                    program.accept(visitor);
+                        program.accept(visitor);
 
-                } catch (ParseCancellationException ex) {
-                    errors.put(p.toString()+"-"+commit, ex.getMessage());
-                }
+                    } catch (Exception ex) {
+                        errors.put(p+"-"+commit, ex.getMessage());
+                    }
+                };
+
+                tasks.add(pool.submit(task));
             }
+
+            for (val task : tasks) {
+                task.get();
+            }
+
+            pool.shutdown();
 
             metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
             metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
@@ -195,7 +211,9 @@ public class RepositoryWalker {
                     .errors(errors)
                     .build();
 
-            summaries.add(summary);
+            synchronized (summaries) {
+                summaries.add(summary);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
