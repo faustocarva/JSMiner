@@ -71,7 +71,7 @@ public class RepositoryWalker {
             logger.error("{} -- failed to get the project main branch", project);
             return summaries;
         }
-
+        git.reset().setMode(ResetCommand.ResetType.HARD).call();
         git.checkout().setName(mainBranch).call();
 
         val head = repository.resolve("refs/heads/" + mainBranch);
