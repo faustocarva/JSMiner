@@ -204,6 +204,8 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("errors").value(errors.size()).build());
             metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
 
+            System.gc();
+
             val summary = Summary.builder()
                     .date(current)
                     .revision(head.toString())
