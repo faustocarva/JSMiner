@@ -185,24 +185,24 @@ public class RepositoryWalker {
 
             pool.shutdown();
 
-            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
-            metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
-            metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());
-            metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations()).build());
-            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations()).build());
-            metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations()).build());
-            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
-            metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations()).build());
-            metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements()).build());
-            metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises()).build());
-            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom()).build());
-            metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters()).build());
-            metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements()).build());
-            metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
-            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
-            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
+            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations().get()).build());
+            metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations().get()).build());
+            metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration().get()).build());
+            metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations().get()).build());
+            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations().get()).build());
+            metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations().get()).build());
+            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations().get()).build());
+            metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations().get()).build());
+            metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements().get()).build());
+            metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises().get()).build());
+            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom().get()).build());
+            metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters().get()).build());
+            metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements().get()).build());
+            metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments().get()).build());
+            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring().get()).build());
+            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring().get()).build());
             metrics.add(Metric.builder().name("errors").value(errors.size()).build());
-            metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements()).build());
+            metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
 
             val summary = Summary.builder()
                     .date(current)
