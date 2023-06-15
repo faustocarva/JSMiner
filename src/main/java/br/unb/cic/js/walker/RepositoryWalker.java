@@ -5,6 +5,7 @@ import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
 import br.unb.cic.js.miner.metrics.Metric;
+import br.unb.cic.js.miner.metrics.Profiler;
 import br.unb.cic.js.miner.metrics.Summary;
 import lombok.Builder;
 import lombok.val;
@@ -110,12 +111,20 @@ public class RepositoryWalker {
         logger.info("{} -- number of commits {} ", project, totalCommits);
         logger.info("{} -- number of groups {} ", project, totalGroups);
 
+        val profiler = new Profiler();
+
         for (Date current : commitDates) {
             traversed++;
-            logger.info("{} -- visiting commit group {} of {}", project, traversed, totalGroups);
+            logger.info("{} -- visiting commit group {} of {} (took {}ms to collect in the last run)", project, traversed, totalGroups, profiler.last());
+
+            profiler.start();
 
             collect(head, current, commits);
+
+            profiler.stop();
         }
+
+        logger.info("{} -- finished, took {}ms in average to collect each commit group", project, profiler.average());
 
         git.close();
 
