@@ -1,12 +1,11 @@
 package br.unb.cic.js.miner.metrics;
 
-import lombok.val;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Profiler abstracts a set of points whose value is the time it took to do some computation.
+ * Profiler abstracts a set of points whose value is the time it took to do some computation. The precision of the
+ * profiler is given in milliseconds.
  */
 public class Profiler {
 

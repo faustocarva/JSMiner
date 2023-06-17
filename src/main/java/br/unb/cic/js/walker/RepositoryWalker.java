@@ -45,9 +45,9 @@ public class RepositoryWalker {
     /**
      * Traverse the git project from an initial date to an end date.
      *
-     * @param initial
-     * @param end
-     * @param steps
+     * @param initial The initial date of the traversal
+     * @param end The end date of the traversal
+     * @param steps How many days should the traverse use to group a set of commits?
      * @throws Exception
      */
     public List<Summary> traverse(Date initial, Date end, int steps) throws Exception {
