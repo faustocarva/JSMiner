@@ -174,9 +174,7 @@ public class RepositoryWalker {
             for (Path p : files) {
                 Runnable task = () -> {
                     try {
-                        val file = p.toFile();
-
-                        val content = new String(Files.readAllBytes(file.toPath()));
+                        val content = new String(Files.readAllBytes(p));
                         val program = parser.parse(content);
 
                         program.accept(visitor);
