@@ -150,6 +150,15 @@ public class RepositoryWalker {
                         val file = filepath.toFile();
 
                         val isDirectory = file.isDirectory();
+                        val isNotLib = !file.getName().equals("lib");
+                        val isNotVendor = !file.getName().equals("vendor");
+
+                        return isDirectory && isNotLib & isNotVendor;
+                    })
+                    .filter(filepath -> {
+                        val file = filepath.toFile();
+
+                        val isDirectory = file.isDirectory();
                         val isJsFile = file.toString().endsWith(".js");
 
                         return !isDirectory && isJsFile;
