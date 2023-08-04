@@ -150,15 +150,7 @@ public class RepositoryWalker {
             val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
             val files = walker.collect(Collectors.toList())
                     .stream()
-                    .filter(filepath -> {
-                        val file = filepath.toFile();
-
-                        val isDirectory = file.isDirectory();
-                        val isNotLib = !file.getName().equals("lib");
-                        val isNotVendor = !file.getName().equals("vendor");
-
-                        return isDirectory && isNotLib & isNotVendor;
-                    })
+                    .filter(RepositoryWalker::shouldCollect)
                     .filter(filepath -> {
                         val file = filepath.toFile();
 
@@ -242,5 +234,19 @@ public class RepositoryWalker {
             logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * This method filters out directories that match with a list of words defined within. The directories contain
+     * files that are not from the analyzed project but are 3rd party code.
+     *
+     * @param filepath The path of a given file
+     * @return If that filepath should be collected for analysis.
+     */
+    private static boolean shouldCollect(Path filepath) {
+        val file = filepath.toFile().toString();
+        val directories = new String[]{"lib", "vendor", "node_modules", "libs", "coverage", "build", "bin", "stories", "dist", "external"};
+
+        return Arrays.stream(directories).noneMatch(file::contains);
     }
 }
