@@ -125,9 +125,13 @@ public class RepositoryWalker {
 
             profiler.start();
 
-            collect(head, current, commits, threads);
+            val summary = collect(head, current, commits, threads);
 
             profiler.stop();
+
+            synchronized (summaries) {
+                summaries.add(summary);
+            }
         }
 
         logger.info("{} -- finished, took {}ms in average to collect each commit group", project, profiler.average());
@@ -140,8 +144,9 @@ public class RepositoryWalker {
     /**
      * Collect metrics about a given commit interval
      */
-    private void collect(ObjectId head, Date current, Map<Date, ObjectId> commits, int threads) {
+    private Summary collect(ObjectId head, Date current, Map<Date, ObjectId> commits, int threads) {
         val id = commits.get(current);
+        val summary = Summary.builder();
 
         try (Git git = new Git(repository)) {
             val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
@@ -220,21 +225,17 @@ public class RepositoryWalker {
 
             System.gc();
 
-            val summary = Summary.builder()
-                    .date(current)
+            summary.date(current)
                     .revision(head.toString())
                     .metrics(metrics)
-                    .errors(errors)
-                    .build();
-
-            synchronized (summaries) {
-                summaries.add(summary);
-            }
+                    .errors(errors);
         } catch (Exception ex) {
             logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
             ex.printStackTrace();
 
             throw new RuntimeException(ex);
         }
+
+        return summary.build();
     }
 }
