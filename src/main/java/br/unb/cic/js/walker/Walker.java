@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class Walker {
 
     private static final Logger logger = LogManager.getLogger(Walker.class);
+
     public final String path;
     public final String project;
     public final int steps;
@@ -68,7 +69,7 @@ public class Walker {
                     repositories.addAll(Files.find(p, 1, (path, attrs) -> {
                         val pathParts = path.toString().split("/");
 
-                        val isEqualPath = pathParts[pathParts.length-1].equals(project);
+                        val isEqualPath = pathParts[pathParts.length - 1].equals(project);
                         val isDirectory = attrs.isDirectory();
                         val isGitDirectory = path.resolve(".git").toFile().isDirectory();
 
@@ -95,9 +96,9 @@ public class Walker {
                 val pool = Executors.newFixedThreadPool(projectThreads);
                 val tasks = new Vector<Future>();
 
-                for (Path repositoryPath: repositories) {
+                for (Path repositoryPath : repositories) {
                     val repositoryPathSplit = repositoryPath.toString().split("/");
-                    val repositoryName = repositoryPathSplit[repositoryPathSplit .length-1];
+                    val repositoryName = repositoryPathSplit[repositoryPathSplit.length - 1];
 
                     logger.info("project: {}", repositoryName);
 

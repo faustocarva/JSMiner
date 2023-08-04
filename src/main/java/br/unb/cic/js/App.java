@@ -8,7 +8,6 @@ import lombok.val;
 import java.text.ParseException;
 
 public class App {
-
     public static void main(String []args) {
 
         val arguments = new Args();

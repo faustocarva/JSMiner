@@ -33,11 +33,13 @@ import java.util.stream.Collectors;
  */
 @Builder
 public class RepositoryWalker {
+    private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
 
     public final String project;
     public final Path path;
-    private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
+
     private final List<Summary> summaries = new ArrayList<>();
+
     private Repository repository;
 
     /**
@@ -229,9 +231,9 @@ public class RepositoryWalker {
                 summaries.add(summary);
             }
         } catch (Exception ex) {
+            logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
             ex.printStackTrace();
 
-            logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
             throw new RuntimeException(ex);
         }
     }
