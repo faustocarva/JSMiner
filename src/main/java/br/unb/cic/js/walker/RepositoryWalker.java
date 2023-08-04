@@ -238,6 +238,9 @@ public class RepositoryWalker {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+
+            logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
+            throw new RuntimeException(ex);
         }
     }
 }
