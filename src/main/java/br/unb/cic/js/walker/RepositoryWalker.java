@@ -7,7 +7,7 @@ import br.unb.cic.js.miner.JSVisitor;
 import br.unb.cic.js.miner.metrics.Metric;
 import br.unb.cic.js.miner.metrics.Profiler;
 import br.unb.cic.js.miner.metrics.Summary;
-import br.unb.cic.js.walker.rules.WalkerDirectoriesRule;
+import br.unb.cic.js.walker.rules.DirectoriesRule;
 import lombok.Builder;
 import lombok.val;
 import org.eclipse.jgit.api.Git;
@@ -152,7 +152,7 @@ public class RepositoryWalker {
             val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
             val files = walker.collect(Collectors.toList())
                     .stream()
-                    .filter(WalkerDirectoriesRule::walk)
+                    .filter(DirectoriesRule::walk)
                     .filter(filepath -> {
                         val file = filepath.toFile();
 
