@@ -34,23 +34,19 @@ import java.util.stream.Collectors;
 @Builder
 public class RepositoryWalker {
 
-    private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
-
     public final String project;
     public final Path path;
-
-    private Repository repository;
-
+    private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
     private final List<Summary> summaries = new ArrayList<>();
+    private Repository repository;
 
     /**
      * Traverse the git project from an initial date to an end date.
      *
      * @param initial The initial date of the traversal
-     * @param end The end date of the traversal
-     * @param steps How many days should the traverse use to group a set of commits?
+     * @param end     The end date of the traversal
+     * @param steps   How many days should the traverse use to group a set of commits?
      * @param threads How many threads to use when analyzing a revision
-     *
      * @throws Exception
      */
     public List<Summary> traverse(Date initial, Date end, int steps, int threads) throws Exception {
@@ -70,7 +66,7 @@ public class RepositoryWalker {
         var mainBranch = "";
 
         if (branches.isPresent()) {
-           mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
+            mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
         } else {
             logger.error("{} -- failed to get the project main branch", project);
             return summaries;
@@ -93,8 +89,8 @@ public class RepositoryWalker {
 
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
-        for (RevCommit commit : revisions) {
-            val author = commit.getAuthorIdent();
+        for (RevCommit revision : revisions) {
+            val author = revision.getAuthorIdent();
             val current = author.getWhen();
 
             if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
@@ -105,7 +101,7 @@ public class RepositoryWalker {
                     previous = current;
                 }
 
-                commits.put(current, commit.toObjectId());
+                commits.put(current, revision.toObjectId());
             }
         }
 
@@ -196,7 +192,7 @@ public class RepositoryWalker {
                         program.accept(visitor);
 
                     } catch (Exception ex) {
-                        errors.put(p+"-"+commit, ex.getMessage());
+                        errors.put(p + "-" + commit, ex.getMessage());
                     }
                 };
 
