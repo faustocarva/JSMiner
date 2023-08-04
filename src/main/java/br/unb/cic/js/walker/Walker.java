@@ -119,6 +119,7 @@ public class Walker {
                             .output(output)
                             .interval(interval)
                             .steps(steps)
+                            .threads(filesThreads)
                             .build();
 
                     tasks.add(pool.submit(task));

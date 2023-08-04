@@ -230,7 +230,9 @@ public class RepositoryWalker {
                     .metrics(metrics)
                     .errors(errors);
         } catch (Exception ex) {
-            logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
+            val commit = commits.get(current).toString().split(" ")[1];
+
+            logger.error("failed to collect data for project: {} on revision: {}", project, commit);
             ex.printStackTrace();
 
             throw new RuntimeException(ex);
