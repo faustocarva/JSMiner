@@ -7,6 +7,7 @@ import br.unb.cic.js.miner.JSVisitor;
 import br.unb.cic.js.miner.metrics.Metric;
 import br.unb.cic.js.miner.metrics.Profiler;
 import br.unb.cic.js.miner.metrics.Summary;
+import br.unb.cic.js.walker.rules.WalkerDirectoriesRule;
 import lombok.Builder;
 import lombok.val;
 import org.eclipse.jgit.api.Git;
@@ -14,7 +15,6 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
@@ -89,7 +89,7 @@ public class RepositoryWalker {
 
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
-        for (RevCommit revision : revisions) {
+        for (val revision : revisions) {
             val author = revision.getAuthorIdent();
             val current = author.getWhen();
 
@@ -150,7 +150,7 @@ public class RepositoryWalker {
             val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
             val files = walker.collect(Collectors.toList())
                     .stream()
-                    .filter(RepositoryWalker::shouldCollect)
+                    .filter(WalkerDirectoriesRule::walk)
                     .filter(filepath -> {
                         val file = filepath.toFile();
 
@@ -234,19 +234,5 @@ public class RepositoryWalker {
             logger.error("failed to collect data for project: {} on revision: {}", project, commits.get(current));
             throw new RuntimeException(ex);
         }
-    }
-
-    /**
-     * This method filters out directories that match with a list of words defined within. The directories contain
-     * files that are not from the analyzed project but are 3rd party code.
-     *
-     * @param filepath The path of a given file
-     * @return If that filepath should be collected for analysis.
-     */
-    private static boolean shouldCollect(Path filepath) {
-        val file = filepath.toFile().toString();
-        val directories = new String[]{"lib", "vendor", "node_modules", "libs", "coverage", "build", "bin", "stories", "dist", "external"};
-
-        return Arrays.stream(directories).noneMatch(file::contains);
     }
 }
