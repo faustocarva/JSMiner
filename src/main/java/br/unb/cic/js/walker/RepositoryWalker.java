@@ -5,16 +5,17 @@ import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
 import br.unb.cic.js.miner.metrics.Metric;
+import br.unb.cic.js.miner.metrics.Profiler;
 import br.unb.cic.js.miner.metrics.Summary;
+import br.unb.cic.js.walker.rules.DirectoriesRule;
 import lombok.Builder;
 import lombok.val;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -30,28 +33,26 @@ import java.util.stream.Collectors;
  */
 @Builder
 public class RepositoryWalker {
-
     private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
 
     public final String project;
     public final Path path;
 
-    private Repository repository;
+    private final List<Summary> summaries = new ArrayList<>();
 
-    private List<Summary> summaries;
+    private Repository repository;
 
     /**
      * Traverse the git project from an initial date to an end date.
      *
-     * @param initial
-     * @param end
-     * @param steps
+     * @param initial The initial date of the traversal
+     * @param end     The end date of the traversal
+     * @param steps   How many days should the traverse use to group a set of commits?
+     * @param threads How many threads to use when analyzing a revision
      * @throws Exception
      */
-    public List<Summary> traverse(Date initial, Date end, int steps) throws Exception {
+    public List<Summary> traverse(Date initial, Date end, int steps, int threads) throws Exception {
         logger.info("{} -- processing project", project);
-
-        summaries = new ArrayList<>();
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
@@ -67,52 +68,73 @@ public class RepositoryWalker {
         var mainBranch = "";
 
         if (branches.isPresent()) {
-           mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
+            mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
         } else {
             logger.error("{} -- failed to get the project main branch", project);
             return summaries;
         }
 
+        git.reset().setMode(ResetCommand.ResetType.HARD).call();
         git.checkout().setName(mainBranch).call();
 
         val head = repository.resolve("refs/heads/" + mainBranch);
+        val revisions = git.log()
+                .add(head)
+                .setRevFilter(RevFilter.ALL)
+                .setSkip(1)
+                .call();
 
         val commits = new HashMap<Date, ObjectId>();
         val commitDates = new ArrayList<Date>();
 
+        Date previous = null;
+
         // fill the commits map with commits that will be analyzed given that they
         // belong to the defined interval
-        for (RevCommit commit : git.log().add(head).call()) {
-            val author = commit.getAuthorIdent();
+        for (val revision : revisions) {
+            val author = revision.getAuthorIdent();
             val current = author.getWhen();
 
             if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
-                commitDates.add(current);
-                commits.put(current, commit.toObjectId());
+                // only add commits that fit the interval
+                if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
+                    commitDates.add(current);
+
+                    previous = current;
+                }
+
+                commits.put(current, revision.toObjectId());
             }
         }
 
         Collections.sort(commitDates);
 
         var traversed = 0;
-        var total = commitDates.size();
 
-        logger.info("{} -- number of commits {} ", project, total);
+        val totalGroups = commitDates.size();
+        val totalCommits = commits.size();
 
-        Date previous = null;
+        logger.info("{} -- number of commits {} ", project, totalCommits);
+        logger.info("{} -- number of groups {} ", project, totalGroups);
+
+        val profiler = new Profiler();
 
         for (Date current : commitDates) {
-            if (traversed % 500 == 0) {
-                logger.info("{} -- visiting commit {} of {}", project, traversed, total);
-            }
             traversed++;
+            logger.info("{} -- visiting commit group {} of {} (took {}ms to collect in the last run)", project, traversed, totalGroups, profiler.last());
 
-            if (previous == null || (Interval.diff(previous, current, Interval.Unit.Days) >= steps)) {
-                collect(head, current, commits);
+            profiler.start();
 
-                previous = current;
+            val summary = collect(head, current, commits, threads);
+
+            profiler.stop();
+
+            synchronized (summaries) {
+                summaries.add(summary);
             }
         }
+
+        logger.info("{} -- finished, took {}ms in average to collect each commit group", project, profiler.average());
 
         git.close();
 
@@ -122,8 +144,9 @@ public class RepositoryWalker {
     /**
      * Collect metrics about a given commit interval
      */
-    private void collect(ObjectId head, Date current, Map<Date, ObjectId> commits) {
+    private Summary collect(ObjectId head, Date current, Map<Date, ObjectId> commits, int threads) {
         val id = commits.get(current);
+        val summary = Summary.builder();
 
         try (Git git = new Git(repository)) {
             val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
@@ -134,6 +157,7 @@ public class RepositoryWalker {
             val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
             val files = walker.collect(Collectors.toList())
                     .stream()
+                    .filter(DirectoriesRule::walk)
                     .filter(filepath -> {
                         val file = filepath.toFile();
 
@@ -155,49 +179,65 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("revision").value(commit).build());
             metrics.add(Metric.builder().name("files").value(files.size()).build());
 
+            val tasks = new ArrayList<Future>(threads);
+            val pool = Executors.newFixedThreadPool(threads);
+
             for (Path p : files) {
-                try {
-                    val file = p.toFile();
+                Runnable task = () -> {
+                    try {
+                        val content = new String(Files.readAllBytes(p));
+                        val program = parser.parse(content);
 
-                    val content = new String(Files.readAllBytes(file.toPath()));
-                    val program = parser.parse(content);
+                        program.accept(visitor);
 
-                    program.accept(visitor);
+                    } catch (Exception ex) {
+                        errors.put(p + "-" + commit, ex.getMessage());
+                    }
+                };
 
-                } catch (ParseCancellationException ex) {
-                    errors.put(p.toString()+"-"+commit, ex.getMessage());
-                }
+                tasks.add(pool.submit(task));
             }
 
-            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations()).build());
-            metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations()).build());
-            metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration()).build());
-            metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations()).build());
-            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations()).build());
-            metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations()).build());
-            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations()).build());
-            metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations()).build());
-            metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements()).build());
-            metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises()).build());
-            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom()).build());
-            metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters()).build());
-            metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements()).build());
-            metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments()).build());
-            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring()).build());
-            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring()).build());
-            metrics.add(Metric.builder().name("errors").value(errors.size()).build());
-            metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements()).build());
+            for (val task : tasks) {
+                task.get();
+            }
 
-            val summary = Summary.builder()
-                    .date(current)
+            pool.shutdown();
+
+            metrics.add(Metric.builder().name("async-declarations").value(visitor.getTotalAsyncDeclarations().get()).build());
+            metrics.add(Metric.builder().name("await-declarations").value(visitor.getTotalAwaitDeclarations().get()).build());
+            metrics.add(Metric.builder().name("const-declarations").value(visitor.getTotalConstDeclaration().get()).build());
+            metrics.add(Metric.builder().name("class-declarations").value(visitor.getTotalClassDeclarations().get()).build());
+            metrics.add(Metric.builder().name("arrow-function-declarations").value(visitor.getTotalArrowDeclarations().get()).build());
+            metrics.add(Metric.builder().name("let-declarations").value(visitor.getTotalLetDeclarations().get()).build());
+            metrics.add(Metric.builder().name("export-declarations").value(visitor.getTotalExportDeclarations().get()).build());
+            metrics.add(Metric.builder().name("yield-declarations").value(visitor.getTotalYieldDeclarations().get()).build());
+            metrics.add(Metric.builder().name("import-statements").value(visitor.getTotalImportStatements().get()).build());
+            metrics.add(Metric.builder().name("promise-declarations").value(visitor.getTotalNewPromises().get()).build());
+            metrics.add(Metric.builder().name("promise-all-and-then").value(visitor.getTotalPromiseAllAndThenIdiom().get()).build());
+            metrics.add(Metric.builder().name("default-parameters").value(visitor.getTotalDefaultParameters().get()).build());
+            metrics.add(Metric.builder().name("rest-statements").value(visitor.getTotalRestStatements().get()).build());
+            metrics.add(Metric.builder().name("spread-arguments").value(visitor.getTotalSpreadArguments().get()).build());
+            metrics.add(Metric.builder().name("array-destructuring").value(visitor.getTotalArrayDestructuring().get()).build());
+            metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring().get()).build());
+            metrics.add(Metric.builder().name("errors").value(errors.size()).build());
+            metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
+
+            System.gc();
+
+            summary.date(current)
                     .revision(head.toString())
                     .metrics(metrics)
-                    .errors(errors)
-                    .build();
-
-            summaries.add(summary);
+                    .errors(errors);
         } catch (Exception ex) {
+            val commit = commits.get(current).toString().split(" ")[1];
+
+            logger.error("failed to collect data for project: {} on revision: {}", project, commit);
             ex.printStackTrace();
+
+            throw new RuntimeException(ex);
         }
+
+        return summary.build();
     }
 }

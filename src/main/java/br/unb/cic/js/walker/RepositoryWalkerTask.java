@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -25,22 +26,22 @@ public class RepositoryWalkerTask implements Runnable {
 
     public final Interval interval;
 
+    // Threads represents the number of visitors working concurrently on a given revision
+    public final int threads;
+
     public final int steps;
 
     @Override
     public void run() {
+        // build report and report errors file
+        val reportFile = Paths.get(output.toString(), walker.project + ".csv");
+        val reportErrors = Paths.get(output.toString(), walker.project + "-errors.txt");
+
+        val content = new StringBuilder();
+        val errors = new StringBuilder();
+
         try {
-            val summaries = walker.traverse(interval.begin, interval.end, steps);
-
-            // build report and report errors file
-            val reportFile = Paths.get(output.toString(), walker.project + ".csv");
-            val reportErrors = Paths.get(output.toString(), walker.project + "-errors.txt");
-
-            reportFile.toFile().createNewFile();
-            reportErrors.toFile().createNewFile();
-
-            val content = new StringBuilder();
-            val errors = new StringBuilder();
+            val summaries = walker.traverse(interval.begin, interval.end, steps, threads);
             
             summaries.forEach(s -> {
                         content.append(s.values())
@@ -54,25 +55,33 @@ public class RepositoryWalkerTask implements Runnable {
                         });
             });
 
-            val reportWriter = new BufferedWriter(new FileWriter(reportFile.toFile()));
-            val errorsWriter = new BufferedWriter(new FileWriter(reportErrors.toFile()));
+            reportFile.toFile().createNewFile();
+            reportErrors.toFile().createNewFile();
 
-            reportWriter.write(Summary.header());
-            reportWriter.write(content.toString());
-            reportWriter.flush();
+            try (val reportWriter = new BufferedWriter(new FileWriter(reportFile.toFile()));
+                 val errorsWriter = new BufferedWriter(new FileWriter(reportErrors.toFile()))) {
 
-            errorsWriter.write(errors.toString());
-            errorsWriter.flush();
+                reportWriter.write(Summary.header());
+                reportWriter.write(content.toString());
+                reportWriter.flush();
+
+                errorsWriter.write(errors.toString());
+                errorsWriter.flush();
+            } catch (IOException ex) {
+                logger.error("failed to write on report/errors file for project {}", walker.project);
+                throw new RuntimeException(ex);
+            }
 
             synchronized (results) {
                 results.write(content.toString());
                 results.flush();
             }
-
-            reportWriter.close();
-            errorsWriter.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            logger.error("failed to create a report/errors file for project {}", walker.project);
+            throw new RuntimeException(ex);
+        } catch (Exception ex) {
+            logger.error("failed to traverse project {}", walker.project);
+            throw new RuntimeException(ex);
         }
     }
 }

@@ -4,12 +4,13 @@ import br.unb.cic.js.date.Formatter;
 import br.unb.cic.js.walker.Walker;
 import com.beust.jcommander.JCommander;
 import lombok.val;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 
 public class App {
-
-    public static void main(String []args) {
+    public static void main(String[] args) {
+        val logger = LoggerFactory.getLogger(App.class);
 
         val arguments = new Args();
 
@@ -19,7 +20,7 @@ public class App {
 
         try {
             cli.parse(args);
-        } catch(RuntimeException ex) {
+        } catch (RuntimeException ex) {
             cli.usage();
         }
 
@@ -28,13 +29,15 @@ public class App {
                     .path(arguments.directory)
                     .project(arguments.project)
                     .steps(arguments.steps)
-                    .threads(arguments.threads)
+                    .projectThreads(arguments.threadsProjects)
+                    .filesThreads(arguments.threadsFiles)
                     .initialDate(Formatter.format.parse(arguments.initialDate))
                     .endDate(Formatter.format.parse(arguments.endDate))
                     .build();
 
             walker.traverse();
-        } catch(ParseException ex) {
+        } catch (ParseException ex) {
+            logger.error("failed to parse date arguments");
             ex.printStackTrace();
         }
     }

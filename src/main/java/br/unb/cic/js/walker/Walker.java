@@ -26,21 +26,24 @@ import java.util.stream.Collectors;
 public class Walker {
 
     private static final Logger logger = LogManager.getLogger(Walker.class);
+
     public final String path;
     public final String project;
     public final int steps;
-    public final int threads;
+    public final int projectThreads;
+    public final int filesThreads;
     public final Date initialDate;
     public final Date endDate;
 
     public void traverse() {
         logger.info("initializing git traversal");
         logger.info(
-                "path: {} | project: {} | steps: {} | threads: {} | initial date: {} | end date: {}",
+                "path: {} | project: {} | steps: {} | project threads: {} |  files threads: {} | initial date: {} | end date: {}",
                 path,
                 project,
                 steps,
-                threads,
+                projectThreads,
+                filesThreads,
                 initialDate,
                 endDate
         );
@@ -66,7 +69,7 @@ public class Walker {
                     repositories.addAll(Files.find(p, 1, (path, attrs) -> {
                         val pathParts = path.toString().split("/");
 
-                        val isEqualPath = pathParts[pathParts.length-1].equals(project);
+                        val isEqualPath = pathParts[pathParts.length - 1].equals(project);
                         val isDirectory = attrs.isDirectory();
                         val isGitDirectory = path.resolve(".git").toFile().isDirectory();
 
@@ -90,12 +93,12 @@ public class Walker {
 
                 writer.write(Summary.header());
 
-                val pool = Executors.newFixedThreadPool(threads);
+                val pool = Executors.newFixedThreadPool(projectThreads);
                 val tasks = new Vector<Future>();
 
-                for (Path repositoryPath: repositories) {
+                for (Path repositoryPath : repositories) {
                     val repositoryPathSplit = repositoryPath.toString().split("/");
-                    val repositoryName = repositoryPathSplit[repositoryPathSplit .length-1];
+                    val repositoryName = repositoryPathSplit[repositoryPathSplit.length - 1];
 
                     logger.info("project: {}", repositoryName);
 
@@ -116,6 +119,7 @@ public class Walker {
                             .output(output)
                             .interval(interval)
                             .steps(steps)
+                            .threads(filesThreads)
                             .build();
 
                     tasks.add(pool.submit(task));
