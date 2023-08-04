@@ -49,6 +49,7 @@ public class RepositoryWalker {
      * @param end The end date of the traversal
      * @param steps How many days should the traverse use to group a set of commits?
      * @param threads How many threads to use when analyzing a revision
+     *
      * @throws Exception
      */
     public List<Summary> traverse(Date initial, Date end, int steps, int threads) throws Exception {
@@ -177,7 +178,7 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("revision").value(commit).build());
             metrics.add(Metric.builder().name("files").value(files.size()).build());
 
-            val tasks = new ArrayList<Future>();
+            val tasks = new ArrayList<Future>(threads);
             val pool = Executors.newFixedThreadPool(threads);
 
             for (Path p : files) {
