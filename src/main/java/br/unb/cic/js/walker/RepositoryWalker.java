@@ -48,9 +48,10 @@ public class RepositoryWalker {
      * @param initial The initial date of the traversal
      * @param end The end date of the traversal
      * @param steps How many days should the traverse use to group a set of commits?
+     * @param threads How many threads to use when analyzing a revision
      * @throws Exception
      */
-    public List<Summary> traverse(Date initial, Date end, int steps) throws Exception {
+    public List<Summary> traverse(Date initial, Date end, int steps, int threads) throws Exception {
         logger.info("{} -- processing project", project);
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
@@ -119,7 +120,7 @@ public class RepositoryWalker {
 
             profiler.start();
 
-            collect(head, current, commits);
+            collect(head, current, commits, threads);
 
             profiler.stop();
         }
@@ -134,7 +135,7 @@ public class RepositoryWalker {
     /**
      * Collect metrics about a given commit interval
      */
-    private void collect(ObjectId head, Date current, Map<Date, ObjectId> commits) {
+    private void collect(ObjectId head, Date current, Map<Date, ObjectId> commits, int threads) {
         val id = commits.get(current);
 
         try (Git git = new Git(repository)) {
@@ -176,9 +177,8 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("revision").value(commit).build());
             metrics.add(Metric.builder().name("files").value(files.size()).build());
 
-            val cores = Runtime.getRuntime().availableProcessors();
             val tasks = new ArrayList<Future>();
-            val pool = Executors.newFixedThreadPool(cores);
+            val pool = Executors.newFixedThreadPool(threads);
 
             for (Path p : files) {
                 Runnable task = () -> {

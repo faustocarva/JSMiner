@@ -29,18 +29,20 @@ public class Walker {
     public final String path;
     public final String project;
     public final int steps;
-    public final int threads;
+    public final int projectThreads;
+    public final int filesThreads;
     public final Date initialDate;
     public final Date endDate;
 
     public void traverse() {
         logger.info("initializing git traversal");
         logger.info(
-                "path: {} | project: {} | steps: {} | threads: {} | initial date: {} | end date: {}",
+                "path: {} | project: {} | steps: {} | project threads: {} |  files threads: {} | initial date: {} | end date: {}",
                 path,
                 project,
                 steps,
-                threads,
+                projectThreads,
+                filesThreads,
                 initialDate,
                 endDate
         );
@@ -90,7 +92,7 @@ public class Walker {
 
                 writer.write(Summary.header());
 
-                val pool = Executors.newFixedThreadPool(threads);
+                val pool = Executors.newFixedThreadPool(projectThreads);
                 val tasks = new Vector<Future>();
 
                 for (Path repositoryPath: repositories) {

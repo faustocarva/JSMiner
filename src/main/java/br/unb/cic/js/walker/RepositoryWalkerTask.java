@@ -25,12 +25,15 @@ public class RepositoryWalkerTask implements Runnable {
 
     public final Interval interval;
 
+    // Threads represents the number of visitors working concurrently on a given revision
+    public final int threads;
+
     public final int steps;
 
     @Override
     public void run() {
         try {
-            val summaries = walker.traverse(interval.begin, interval.end, steps);
+            val summaries = walker.traverse(interval.begin, interval.end, steps, threads);
 
             // build report and report errors file
             val reportFile = Paths.get(output.toString(), walker.project + ".csv");
