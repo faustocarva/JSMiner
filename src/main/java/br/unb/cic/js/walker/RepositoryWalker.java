@@ -225,8 +225,6 @@ public class RepositoryWalker {
             metrics.add(Metric.builder().name("errors").value(errors.size()).build());
             metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
 
-            System.gc();
-
             summary.date(current)
                     .revision(head.toString())
                     .metrics(metrics)
@@ -234,7 +232,7 @@ public class RepositoryWalker {
         } catch (Exception ex) {
             val commit = commits.get(current).toString().split(" ")[1];
 
-            logger.error("failed to collect data for project: {} on revision: {}", project, commit);
+            logger.error("failed to collect data for project {} on revision: {}", project, commit);
             ex.printStackTrace();
         }
 
