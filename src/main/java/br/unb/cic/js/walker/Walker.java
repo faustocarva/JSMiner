@@ -83,7 +83,7 @@ public class Walker {
                 }
 
                 // create a report directory and file that will contain the results
-                val output = Paths.get(p.toAbsolutePath().getParent().toString(), "js-miner-out");
+                val output = Paths.get(p.toAbsolutePath().getParent().toString(), "jsminer-out");
                 if (!output.toFile().exists()) {
                     Files.createDirectory(output);
                 }
