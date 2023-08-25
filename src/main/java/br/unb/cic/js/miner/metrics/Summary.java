@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * 
+ * Summary represents a collection of metrics for a given project, at a given date and on a given revision.
  */
 @Builder
 public class Summary {
@@ -19,12 +19,11 @@ public class Summary {
 
     public final List<Metric> metrics;
 
-    // Map of files to errors that ocurred when parsing or visiting
+    // Map of files to errors that occurred when parsing or visiting
     public final HashMap<String, String> errors;
 
     /**
      * Returns a string containing the header for the CSV report with default fields
-     * @return
      */
     public static String header() {
         val h = new StringBuilder();
@@ -53,6 +52,10 @@ public class Summary {
     }
 
     public String values() {
+        if (metrics == null) {
+            return "";
+        }
+
         val l = new StringBuilder();
 
         metrics.forEach(m -> l.append(m.value.toString()).append(","));
