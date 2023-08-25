@@ -121,7 +121,6 @@ public class RepositoryWalker {
 
         for (Date current : commitDates) {
             traversed++;
-            logger.info("{} -- visiting commit group {} of {} (took {}ms to collect in the last run)", project, traversed, totalGroups, profiler.last());
 
             profiler.start();
 
@@ -129,12 +128,17 @@ public class RepositoryWalker {
 
             profiler.stop();
 
+            logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
+
             synchronized (summaries) {
                 summaries.add(summary);
             }
         }
 
-        logger.info("{} -- finished, took {}ms in average to collect each commit group", project, profiler.average());
+        val average = profiler.average();
+        val total = (double) profiler.total() / 1000.0;
+
+        logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
 
         git.close();
 
@@ -148,8 +152,17 @@ public class RepositoryWalker {
         val id = commits.get(current);
         val summary = Summary.builder();
 
+        val metrics = new ArrayList<Metric>();
+
+        metrics.add(Metric.builder().name("project").value(project).build());
+        metrics.add(Metric.builder().name("date (dd-mm-yyyy)").value(Formatter.format.format(current)).build());
+
+        var errors = new HashMap<String, String>();
+
         try (Git git = new Git(repository)) {
             val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
+
+            metrics.add(Metric.builder().name("revision").value(commit).build());
 
             git.reset().setMode(ResetCommand.ResetType.HARD).call();
             git.checkout().setName(id.getName()).call();
@@ -169,17 +182,10 @@ public class RepositoryWalker {
 
             walker.close();
 
+            metrics.add(Metric.builder().name("files").value(files.size()).build());
+
             val parser = new JSParser();
             val visitor = new JSVisitor();
-
-            var errors = new HashMap<String, String>();
-
-            val metrics = new ArrayList<Metric>();
-
-            metrics.add(Metric.builder().name("project").value(project).build());
-            metrics.add(Metric.builder().name("date (dd-mm-yyyy)").value(Formatter.format.format(current)).build());
-            metrics.add(Metric.builder().name("revision").value(commit).build());
-            metrics.add(Metric.builder().name("files").value(files.size()).build());
 
             val tasks = new ArrayList<Future>(threads);
             val pool = Executors.newFixedThreadPool(threads);
@@ -234,6 +240,13 @@ public class RepositoryWalker {
 
             logger.error("failed to collect data for project {} on revision: {}", project, commit);
             ex.printStackTrace();
+
+            errors.put("exception", ex.getMessage());
+        } finally {
+            summary.date(current)
+                    .revision(head.toString())
+                    .metrics(metrics)
+                    .errors(errors);
         }
 
         return summary.build();

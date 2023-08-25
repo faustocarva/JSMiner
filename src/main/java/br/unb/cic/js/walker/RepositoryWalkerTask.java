@@ -42,17 +42,17 @@ public class RepositoryWalkerTask implements Runnable {
 
         try {
             val summaries = walker.traverse(interval.begin, interval.end, steps, threads);
-            
-            summaries.forEach(s -> {
-                        content.append(s.values())
-                       .append("\n");
 
-                        s.errors.forEach((k, v) -> {
-                            errors.append(k)
-                                    .append("\n")
-                                    .append(v)
-                                    .append("\n-----------------------\n");
-                        });
+            summaries.forEach(s -> {
+                content.append(s.values())
+                        .append("\n");
+
+                s.errors.forEach((k, v) -> {
+                    errors.append(k)
+                            .append("\n")
+                            .append(v)
+                            .append("\n-----------------------\n");
+                });
             });
 
             reportFile.toFile().createNewFile();
@@ -80,6 +80,7 @@ public class RepositoryWalkerTask implements Runnable {
             logger.error("failed to create a report/errors file for project {}", walker.project);
         } catch (Exception ex) {
             logger.error("failed to traverse project {}", walker.project);
+            logger.error(ex.getMessage());
         }
     }
 }
