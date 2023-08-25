@@ -23,7 +23,7 @@ public class Profiler {
             return 0L;
         }
 
-        return points.stream().reduce(Long::sum).orElse(0L)/points.size();
+        return points.stream().reduce(Long::sum).orElse(0L) / points.size();
     }
 
     public Long last() {
@@ -31,7 +31,7 @@ public class Profiler {
             return 0L;
         }
 
-        return points.get(points.size()-1);
+        return points.get(points.size() - 1);
     }
 
     /**
@@ -45,8 +45,16 @@ public class Profiler {
      * Stop the timer and add the data point to an internal structure
      */
     public void stop() {
-        this.points.add(System.currentTimeMillis()-timer);
+        this.points.add(System.currentTimeMillis() - timer);
 
         timer = 0L;
+    }
+
+    /**
+     * Computes the total
+     * @return
+     */
+    public Long total() {
+        return points.stream().reduce(Long::sum).orElse(0L);
     }
 }
