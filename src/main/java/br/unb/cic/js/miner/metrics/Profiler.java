@@ -51,8 +51,7 @@ public class Profiler {
     }
 
     /**
-     * Computes the total
-     * @return
+     * Computes the total time the timer has recorded
      */
     public Long total() {
         return points.stream().reduce(Long::sum).orElse(0L);
