@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -71,10 +68,16 @@ public class Walker {
                     return isDirectory && isGitDirectory;
                 }).collect(Collectors.toList()));
             } else {
+                // allow to glob more than one project on specification
+                val projects = project.split(",");
+
                 repositories.addAll(Files.find(p, 1, (path, attrs) -> {
                     val pathParts = path.toString().split("/");
 
-                    val isEqualPath = pathParts[pathParts.length - 1].equals(project);
+                    var isEqualPath = Arrays.stream(projects).anyMatch(project -> {
+                        return pathParts[pathParts.length - 1].equals(project);
+                    });
+                    
                     val isDirectory = attrs.isDirectory();
                     val isGitDirectory = path.resolve(".git").toFile().isDirectory();
 
