@@ -38,7 +38,7 @@ public class RepositoryWalker {
     public final String project;
     public final Path path;
 
-    private final List<Summary> summaries = new ArrayList<>();
+    private final List<Summary> summaries = Collections.synchronizedList(new ArrayList<>());
 
     private Repository repository;
 
@@ -56,91 +56,89 @@ public class RepositoryWalker {
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
-        val git = new Git(repository);
+        try (val git = new Git(repository)) {
+            val branches = git.branchList()
+                    .setListMode(ListBranchCommand.ListMode.REMOTE)
+                    .call()
+                    .stream()
+                    .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
+                    .findFirst();
 
-        val branches = git.branchList()
-                .setListMode(ListBranchCommand.ListMode.REMOTE)
-                .call()
-                .stream()
-                .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
-                .findFirst();
+            var mainBranch = "";
 
-        var mainBranch = "";
+            if (branches.isPresent()) {
+                mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
+            } else {
+                logger.error("{} -- failed to get the project main branch", project);
+                return summaries;
+            }
 
-        if (branches.isPresent()) {
-            mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
-        } else {
-            logger.error("{} -- failed to get the project main branch", project);
-            return summaries;
-        }
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
+            git.checkout().setName(mainBranch).call();
 
-        git.reset().setMode(ResetCommand.ResetType.HARD).call();
-        git.checkout().setName(mainBranch).call();
+            val head = repository.resolve("refs/heads/" + mainBranch);
+            val revisions = git.log()
+                    .add(head)
+                    .setRevFilter(RevFilter.ALL)
+                    .setSkip(1)
+                    .call();
 
-        val head = repository.resolve("refs/heads/" + mainBranch);
-        val revisions = git.log()
-                .add(head)
-                .setRevFilter(RevFilter.ALL)
-                .setSkip(1)
-                .call();
+            val commits = new HashMap<Date, ObjectId>();
+            val commitDates = new ArrayList<Date>();
 
-        val commits = new HashMap<Date, ObjectId>();
-        val commitDates = new ArrayList<Date>();
+            Date previous = null;
 
-        Date previous = null;
+            // fill the commits map with commits that will be analyzed given that they
+            // belong to the defined interval
+            for (val revision : revisions) {
+                val author = revision.getAuthorIdent();
+                val current = author.getWhen();
 
-        // fill the commits map with commits that will be analyzed given that they
-        // belong to the defined interval
-        for (val revision : revisions) {
-            val author = revision.getAuthorIdent();
-            val current = author.getWhen();
+                if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
+                    // only add commits that fit the interval
+                    if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
+                        commitDates.add(current);
 
-            if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
-                // only add commits that fit the interval
-                if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
-                    commitDates.add(current);
+                        previous = current;
+                    }
 
-                    previous = current;
+                    commits.put(current, revision.toObjectId());
                 }
-
-                commits.put(current, revision.toObjectId());
             }
-        }
 
-        Collections.sort(commitDates);
+            Collections.sort(commitDates);
 
-        var traversed = 0;
+            var traversed = 0;
 
-        val totalGroups = commitDates.size();
-        val totalCommits = commits.size();
+            val totalGroups = commitDates.size();
+            val totalCommits = commits.size();
 
-        logger.info("{} -- number of commits {} ", project, totalCommits);
-        logger.info("{} -- number of groups {} ", project, totalGroups);
+            logger.info("{} -- number of commits {} ", project, totalCommits);
+            logger.info("{} -- number of groups {} ", project, totalGroups);
 
-        val profiler = new Profiler();
+            val profiler = new Profiler();
 
-        for (Date current : commitDates) {
-            traversed++;
+            for (Date current : commitDates) {
+                traversed++;
 
-            profiler.start();
+                profiler.start();
 
-            val summary = collect(head, current, commits, threads);
+                val summary = collect(head, current, commits, threads);
 
-            profiler.stop();
+                profiler.stop();
 
-            logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
+                logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
 
-            synchronized (summaries) {
+
                 summaries.add(summary);
+
             }
+
+            val average = profiler.average();
+            val total = (double) profiler.total() / 1000.0;
+
+            logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
         }
-
-        val average = profiler.average();
-        val total = (double) profiler.total() / 1000.0;
-
-        logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
-
-        git.close();
 
         return summaries;
     }
@@ -187,7 +185,7 @@ public class RepositoryWalker {
             val parser = new JSParser();
             val visitor = new JSVisitor();
 
-            val tasks = new ArrayList<Future>(threads);
+            val tasks = new ArrayList<Future<?>>(threads);
             val pool = Executors.newFixedThreadPool(threads);
 
             for (Path p : files) {
