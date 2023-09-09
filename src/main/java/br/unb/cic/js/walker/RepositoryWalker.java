@@ -150,7 +150,7 @@ public class RepositoryWalker {
         val id = commits.get(current);
         val summary = Summary.builder();
 
-        val metrics = new ArrayList<Metric>();
+        val metrics = new ArrayList<Metric<?>>();
 
         metrics.add(Metric.builder().name("project").value(project).build());
         metrics.add(Metric.builder().name("date (dd-mm-yyyy)").value(Formatter.format.format(current)).build());

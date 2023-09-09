@@ -17,7 +17,7 @@ public class Summary {
     private final Date date; // date of git commit
     private final String revision; // commit hash
 
-    public final List<Metric> metrics;
+    public final List<Metric<?>> metrics;
 
     // Map of files to errors that occurred when parsing or visiting
     public final HashMap<String, String> errors;
