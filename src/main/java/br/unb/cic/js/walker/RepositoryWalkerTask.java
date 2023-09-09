@@ -79,8 +79,7 @@ public class RepositoryWalkerTask implements Runnable {
         } catch (IOException ex) {
             logger.error("failed to create a report/errors file for project {}", walker.project);
         } catch (Exception ex) {
-            logger.error("failed to traverse project {}", walker.project);
-            logger.error(ex.getMessage());
+            logger.error("failed to traverse project {}, reason {}", walker.project, ex.getMessage());
         }
     }
 }
