@@ -99,7 +99,7 @@ public class Walker {
             writer.write(Summary.header());
 
             val pool = Executors.newFixedThreadPool(projectThreads);
-            val tasks = new Vector<Future>();
+            val tasks = new Vector<Future<?>>();
 
             for (Path repositoryPath : repositories) {
                 val repositoryPathSplit = repositoryPath.toString().split("/");
@@ -131,7 +131,7 @@ public class Walker {
             }
 
             // wait for every task to finish
-            for (Future task : tasks) {
+            for (Future<?> task : tasks) {
                 task.get();
             }
 
