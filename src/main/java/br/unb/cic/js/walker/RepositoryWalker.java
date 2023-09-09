@@ -128,8 +128,7 @@ public class RepositoryWalker {
                 profiler.stop();
 
                 logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
-
-
+                
                 summaries.add(summary);
 
             }
