@@ -3,9 +3,11 @@ package br.unb.cic.js.miner.metrics;
 import lombok.Builder;
 import lombok.val;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Summary represents a collection of metrics for a given project, at a given date and on a given revision.
@@ -17,7 +19,10 @@ public class Summary {
     private final Date date; // date of git commit
     private final String revision; // commit hash
 
-    public final List<Metric<?>> metrics;
+    // Internal summary size (the number of columns in the resulting CSV file)
+    private final Integer size = header().split(",").length;
+
+    public List<Metric<?>> metrics;
 
     // Map of files to errors that occurred when parsing or visiting
     public final HashMap<String, String> errors;
@@ -53,7 +58,13 @@ public class Summary {
 
     public String values() {
         if (metrics == null) {
-            return "";
+            metrics = new ArrayList<>();
+        }
+
+        if (metrics.size() <= 3) {
+            // add zero value metrics so an error doesn't leave a blank line on the result file, except for the first 3
+            // (date, project and revision (it's already filled on RepositoryWalker.java))
+            IntStream.range(0, this.size - 3).forEach(i -> metrics.add(Metric.builder().value(0).build()));
         }
 
         val l = new StringBuilder();
