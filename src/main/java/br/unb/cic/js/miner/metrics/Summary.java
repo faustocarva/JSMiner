@@ -58,13 +58,7 @@ public class Summary {
 
     public String values() {
         if (metrics == null) {
-            metrics = new ArrayList<>();
-        }
-
-        if (metrics.size() <= 3) {
-            // add zero value metrics so an error doesn't leave a blank line on the result file, except for the first 3
-            // (date, project and revision (it's already filled on RepositoryWalker.java))
-            IntStream.range(0, this.size - 3).forEach(i -> metrics.add(Metric.builder().value(0).build()));
+            return "";
         }
 
         val l = new StringBuilder();

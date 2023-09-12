@@ -12,6 +12,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Builder
 public class RepositoryWalkerTask implements Runnable {
@@ -42,8 +44,10 @@ public class RepositoryWalkerTask implements Runnable {
             val summaries = walker.traverse(interval.begin, interval.end, steps, threads);
 
             summaries.forEach(s -> {
-                content.append(s.values())
-                        .append("\n");
+                if (!s.values().isEmpty()) {
+                    content.append(s.values())
+                            .append("\n");
+                }
 
                 s.errors.forEach((k, v) -> {
                     errors.append(k)
