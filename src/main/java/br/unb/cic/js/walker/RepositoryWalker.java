@@ -15,6 +15,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
@@ -79,8 +80,8 @@ public class RepositoryWalker {
             val head = repository.resolve("refs/heads/" + mainBranch);
             val revisions = git.log()
                     .add(head)
-                    .setRevFilter(RevFilter.ALL)
-                    .setSkip(1)
+                    .setRevFilter(CommitTimeRevFilter.between(initial, end))
+                    .setRevFilter(RevFilter.NO_MERGES)
                     .call();
 
             val commits = new HashMap<Date, ObjectId>();
@@ -128,7 +129,7 @@ public class RepositoryWalker {
                 profiler.stop();
 
                 logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
-                
+
                 summaries.add(summary);
 
             }
