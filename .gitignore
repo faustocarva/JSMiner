@@ -9,3 +9,5 @@
 .antlr
 dataset/*
 js-miner-out/*
+
+.zip
