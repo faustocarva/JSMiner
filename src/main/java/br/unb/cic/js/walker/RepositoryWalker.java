@@ -170,6 +170,7 @@ public class RepositoryWalker {
                     .stream()
                     .filter(DirectoriesRule::walk)
                     .filter(Files::isRegularFile)
+                    .filter(file -> file.toString().endsWith(".js"))
                     .collect(Collectors.toList());
 
             walker.close();
