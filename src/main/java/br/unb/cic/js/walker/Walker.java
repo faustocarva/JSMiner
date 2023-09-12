@@ -1,15 +1,12 @@
 package br.unb.cic.js.walker;
 
 import br.unb.cic.js.date.Interval;
-import br.unb.cic.js.miner.metrics.Summary;
 import lombok.Builder;
 import lombok.val;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,10 +71,8 @@ public class Walker {
                 repositories.addAll(Files.find(p, 1, (path, attrs) -> {
                     val pathParts = path.toString().split("/");
 
-                    var isEqualPath = Arrays.stream(projects).anyMatch(project -> {
-                        return pathParts[pathParts.length - 1].equals(project);
-                    });
-                    
+                    var isEqualPath = Arrays.stream(projects).anyMatch(project -> pathParts[pathParts.length - 1].equals(project));
+
                     val isDirectory = attrs.isDirectory();
                     val isGitDirectory = path.resolve(".git").toFile().isDirectory();
 
@@ -95,11 +90,6 @@ public class Walker {
             if (!output.toFile().exists()) {
                 Files.createDirectory(output);
             }
-
-            val results = output.resolve("results.csv");
-            val writer = new BufferedWriter(new FileWriter(results.toFile()));
-
-            writer.write(Summary.header());
 
             val pool = Executors.newFixedThreadPool(projectThreads);
             val tasks = new Vector<Future<?>>();
@@ -123,7 +113,6 @@ public class Walker {
 
                 val task = RepositoryWalkerTask.builder()
                         .walker(walker)
-                        .results(writer)
                         .output(output)
                         .interval(interval)
                         .steps(steps)
@@ -139,10 +128,6 @@ public class Walker {
             }
 
             pool.shutdown();
-
-            // flush any pending text and close the results.csv writer
-            writer.flush();
-            writer.close();
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (java.lang.InterruptedException | java.util.concurrent.ExecutionException ex) {
