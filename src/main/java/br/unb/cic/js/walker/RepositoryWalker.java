@@ -169,14 +169,8 @@ public class RepositoryWalker {
             val files = walker.collect(Collectors.toList())
                     .stream()
                     .filter(DirectoriesRule::walk)
-                    .filter(filepath -> {
-                        val file = filepath.toFile();
-
-                        val isDirectory = file.isDirectory();
-                        val isJsFile = file.toString().endsWith(".js");
-
-                        return !isDirectory && isJsFile;
-                    }).collect(Collectors.toList());
+                    .filter(Files::isRegularFile)
+                    .collect(Collectors.toList());
 
             walker.close();
 
