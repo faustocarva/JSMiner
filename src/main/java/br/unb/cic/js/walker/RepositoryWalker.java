@@ -117,8 +117,9 @@ public final class RepositoryWalker {
     /**
      * Traverse the git project to look for a given hash and then collect metrics about that specific point.
      *
-     * @param hash
-     * @param threads
+     * @param interval The delta date of the traversal
+     * @param hash     The hash of a given revision
+     * @param threads  How many threads to use when analyzing a revision
      * @return
      * @throws Exception
      */
