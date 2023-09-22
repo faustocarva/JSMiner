@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * This class represents a git project to be analyzed.
  */
 @Builder
-public class RepositoryWalker {
+public final class RepositoryWalker {
     private final Logger logger = LoggerFactory.getLogger(RepositoryWalker.class);
 
     public final String project;
@@ -52,7 +52,7 @@ public class RepositoryWalker {
      * @param threads How many threads to use when analyzing a revision
      * @throws Exception
      */
-    public List<Summary> traverse(Date initial, Date end, int steps, int threads) throws Exception {
+    public List<Summary> traverse(final Date initial, final Date end, final int steps, final int threads) throws Exception {
         logger.info("{} -- processing project", project);
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
@@ -128,7 +128,7 @@ public class RepositoryWalker {
 
                 profiler.stop();
 
-                logger.info("{} -- visiting commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
+                logger.info("{} -- collected commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
 
                 summaries.add(summary);
 
@@ -138,6 +138,72 @@ public class RepositoryWalker {
             val total = (double) profiler.total() / 1000.0;
 
             logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
+        }
+
+        return summaries;
+    }
+
+    /**
+     * Traverse the git project to look for a given hash and then collect metrics about that specific point.
+     *
+     * @param initial
+     * @param end
+     * @param hash
+     * @param threads
+     * @return
+     * @throws Exception
+     */
+    public List<Summary> traverse(final Date initial, final Date end, final String hash, final int threads) throws Exception {
+        logger.info("{} -- processing project for a single revision", project);
+
+        repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
+
+        try (val git = new Git(repository)) {
+            val branches = git.branchList()
+                    .setListMode(ListBranchCommand.ListMode.REMOTE)
+                    .call()
+                    .stream()
+                    .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
+                    .findFirst();
+
+            var mainBranch = "";
+
+            if (branches.isPresent()) {
+                mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
+            } else {
+                logger.error("{} -- failed to get the project main branch", project);
+                return summaries;
+            }
+
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
+            git.checkout().setName(mainBranch).call();
+
+            val head = repository.resolve("refs/heads/" + mainBranch);
+            val revisions = git.log()
+                    .add(head)
+                    .setRevFilter(CommitTimeRevFilter.between(initial, end))
+                    .setRevFilter(RevFilter.NO_MERGES)
+                    .call();
+
+            val commits = new HashMap<Date, ObjectId>();
+
+            for (val revision : revisions) {
+                val id = revision.toObjectId();
+                val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
+
+                if (commit.equals(hash)) {
+                    val author = revision.getAuthorIdent();
+                    val current = author.getWhen();
+
+                    commits.put(current, revision.toObjectId());
+                    break;
+                }
+            }
+
+            val current = commits.keySet().stream().findFirst().get();
+
+            // collect only one summary
+            summaries.add(collect(head, current, commits, threads));
         }
 
         return summaries;

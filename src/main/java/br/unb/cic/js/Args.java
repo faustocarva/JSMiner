@@ -24,6 +24,9 @@ public class Args {
     @Parameter(names = {"-ed", "--end-date"}, description = "When to stop walking the project (dd-mm-yyyy)")
     public String endDate = "30-06-2023";
 
+    @Parameter(names = {"--hash"}, description = "A commit hash to be verified")
+    public String hash = "";
+
     @Parameter(names = {"-h", "--help"}, help = true, description = "Show help")
     private boolean help;
 }
