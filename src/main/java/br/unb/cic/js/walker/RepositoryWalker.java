@@ -11,12 +11,9 @@ import br.unb.cic.js.walker.rules.DirectoriesRule;
 import lombok.Builder;
 import lombok.val;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,99 +43,73 @@ public final class RepositoryWalker {
     /**
      * Traverse the git project from an initial date to an end date.
      *
-     * @param initial The initial date of the traversal
-     * @param end     The end date of the traversal
-     * @param steps   How many days should the traverse use to group a set of commits?
-     * @param threads How many threads to use when analyzing a revision
+     * @param interval The delta date of the traversal
+     * @param steps    How many days should the traverse use to group a set of commits?
+     * @param threads  How many threads to use when analyzing a revision
      * @throws Exception
      */
-    public List<Summary> traverse(final Date initial, final Date end, final int steps, final int threads) throws Exception {
+    public List<Summary> traverse(final Interval interval, final int steps, final int threads) throws Exception {
         logger.info("{} -- processing project", project);
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
-        try (val git = new Git(repository)) {
-            val branches = git.branchList()
-                    .setListMode(ListBranchCommand.ListMode.REMOTE)
-                    .call()
-                    .stream()
-                    .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
-                    .findFirst();
+        val head = RepositoryWalkerGit.head(repository);
+        val revisions = RepositoryWalkerGit.revisions(repository, head, interval);
 
-            var mainBranch = "";
+        val commits = new HashMap<Date, ObjectId>();
+        val commitDates = new ArrayList<Date>();
 
-            if (branches.isPresent()) {
-                mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
-            } else {
-                logger.error("{} -- failed to get the project main branch", project);
-                return summaries;
-            }
+        Date previous = null;
 
-            git.reset().setMode(ResetCommand.ResetType.HARD).call();
-            git.checkout().setName(mainBranch).call();
+        // fill the commits map with commits that will be analyzed given that they
+        // belong to the defined interval
+        for (val revision : revisions) {
+            val author = revision.getAuthorIdent();
+            val current = author.getWhen();
 
-            val head = repository.resolve("refs/heads/" + mainBranch);
-            val revisions = git.log()
-                    .add(head)
-                    .setRevFilter(CommitTimeRevFilter.between(initial, end))
-                    .setRevFilter(RevFilter.NO_MERGES)
-                    .call();
+            if (current.compareTo(interval.begin) >= 0 && current.compareTo(interval.end) <= 0) {
+                // only add commits that fit the interval
+                if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
+                    commitDates.add(current);
 
-            val commits = new HashMap<Date, ObjectId>();
-            val commitDates = new ArrayList<Date>();
-
-            Date previous = null;
-
-            // fill the commits map with commits that will be analyzed given that they
-            // belong to the defined interval
-            for (val revision : revisions) {
-                val author = revision.getAuthorIdent();
-                val current = author.getWhen();
-
-                if (current.compareTo(initial) >= 0 && current.compareTo(end) <= 0) {
-                    // only add commits that fit the interval
-                    if (previous == null || Interval.diff(current, previous, Interval.Unit.Days) >= steps) {
-                        commitDates.add(current);
-
-                        previous = current;
-                    }
-
-                    commits.put(current, revision.toObjectId());
+                    previous = current;
                 }
+
+                commits.put(current, revision.toObjectId());
             }
-
-            Collections.sort(commitDates);
-
-            var traversed = 0;
-
-            val totalGroups = commitDates.size();
-            val totalCommits = commits.size();
-
-            logger.info("{} -- number of commits {} ", project, totalCommits);
-            logger.info("{} -- number of groups {} ", project, totalGroups);
-
-            val profiler = new Profiler();
-
-            for (Date current : commitDates) {
-                traversed++;
-
-                profiler.start();
-
-                val summary = collect(head, current, commits, threads);
-
-                profiler.stop();
-
-                logger.info("{} -- collected commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
-
-                summaries.add(summary);
-
-            }
-
-            val average = profiler.average();
-            val total = (double) profiler.total() / 1000.0;
-
-            logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
         }
+
+        Collections.sort(commitDates);
+
+        var traversed = 0;
+
+        val totalGroups = commitDates.size();
+        val totalCommits = commits.size();
+
+        logger.info("{} -- number of commits {} ", project, totalCommits);
+        logger.info("{} -- number of groups {} ", project, totalGroups);
+
+        val profiler = new Profiler();
+
+        for (Date current : commitDates) {
+            traversed++;
+
+            profiler.start();
+
+            val summary = collect(head, current, commits, threads);
+
+            profiler.stop();
+
+            logger.info("{} -- collected commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups, profiler.last());
+
+            summaries.add(summary);
+
+        }
+
+        val average = profiler.average();
+        val total = (double) profiler.total() / 1000.0;
+
+        logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project, average, total);
 
         return summaries;
     }
@@ -146,65 +117,38 @@ public final class RepositoryWalker {
     /**
      * Traverse the git project to look for a given hash and then collect metrics about that specific point.
      *
-     * @param initial
-     * @param end
      * @param hash
      * @param threads
      * @return
      * @throws Exception
      */
-    public List<Summary> traverse(final Date initial, final Date end, final String hash, final int threads) throws Exception {
+    public List<Summary> traverse(final Interval interval, final String hash, final int threads) throws Exception {
         logger.info("{} -- processing project for a single revision", project);
 
         repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
-        try (val git = new Git(repository)) {
-            val branches = git.branchList()
-                    .setListMode(ListBranchCommand.ListMode.REMOTE)
-                    .call()
-                    .stream()
-                    .filter(n -> n.getName().equals("refs/remotes/origin/HEAD"))
-                    .findFirst();
+        val head = RepositoryWalkerGit.head(repository);
+        val revisions = RepositoryWalkerGit.revisions(repository, head, interval);
 
-            var mainBranch = "";
+        val commits = new HashMap<Date, ObjectId>();
 
-            if (branches.isPresent()) {
-                mainBranch = branches.get().getTarget().getName().substring("refs/remotes/origin/".length());
-            } else {
-                logger.error("{} -- failed to get the project main branch", project);
-                return summaries;
+        for (val revision : revisions) {
+            val id = revision.toObjectId();
+            val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
+
+            if (commit.equals(hash)) {
+                val author = revision.getAuthorIdent();
+                val current = author.getWhen();
+
+                commits.put(current, revision.toObjectId());
+                break;
             }
-
-            git.reset().setMode(ResetCommand.ResetType.HARD).call();
-            git.checkout().setName(mainBranch).call();
-
-            val head = repository.resolve("refs/heads/" + mainBranch);
-            val revisions = git.log()
-                    .add(head)
-                    .setRevFilter(CommitTimeRevFilter.between(initial, end))
-                    .setRevFilter(RevFilter.NO_MERGES)
-                    .call();
-
-            val commits = new HashMap<Date, ObjectId>();
-
-            for (val revision : revisions) {
-                val id = revision.toObjectId();
-                val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
-
-                if (commit.equals(hash)) {
-                    val author = revision.getAuthorIdent();
-                    val current = author.getWhen();
-
-                    commits.put(current, revision.toObjectId());
-                    break;
-                }
-            }
-
-            val current = commits.keySet().stream().findFirst().get();
-
-            // collect only one summary
-            summaries.add(collect(head, current, commits, threads));
         }
+
+        val current = commits.keySet().stream().findFirst().get();
+
+        // collect only one summary
+        summaries.add(collect(head, current, commits, threads));
 
         return summaries;
     }

@@ -50,9 +50,9 @@ public final class RepositoryWalkerTask implements Runnable {
             var summaries = Collections.synchronizedList(new ArrayList<Summary>());
 
             if (hash.length() > 0) {
-                summaries = walker.traverse(interval.begin, interval.end, hash, threads);
+                summaries = walker.traverse(interval, hash, threads);
             } else {
-                summaries = walker.traverse(interval.begin, interval.end, steps, threads);
+                summaries = walker.traverse(interval, steps, threads);
             }
 
             summaries.forEach(s -> {
