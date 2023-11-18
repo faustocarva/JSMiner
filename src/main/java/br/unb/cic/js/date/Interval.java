@@ -1,11 +1,13 @@
 package br.unb.cic.js.date;
 
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Builder
+@RequiredArgsConstructor
 public class Interval {
 
     public final Date begin;

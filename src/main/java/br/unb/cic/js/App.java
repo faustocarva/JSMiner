@@ -29,6 +29,7 @@ public class App {
                     .path(arguments.directory)
                     .project(arguments.project)
                     .steps(arguments.steps)
+                    .hash(arguments.hash)
                     .projectThreads(arguments.threadsProjects)
                     .filesThreads(arguments.threadsFiles)
                     .initialDate(Formatter.format.parse(arguments.initialDate))

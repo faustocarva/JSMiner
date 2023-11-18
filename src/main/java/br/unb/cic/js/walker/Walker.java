@@ -16,13 +16,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+/**
+ * The entire logic of the miner is verified, build and sent to execution here.
+ */
 @Builder
-public class Walker {
+public final class Walker {
 
     private static final Logger logger = LogManager.getLogger(Walker.class);
 
     public final String path;
     public final String project;
+    public final String hash;
     public final int steps;
     public final int projectThreads;
     public final int filesThreads;
@@ -91,6 +95,12 @@ public class Walker {
                 Files.createDirectory(output);
             }
 
+            // check if a hash has been submitted, it will invalidate almost all of the settings and execute the
+            // walker for a single commit hash.
+            if (hash.length() > 0) {
+                assert (repositories.size() == 1);
+            }
+
             val pool = Executors.newFixedThreadPool(projectThreads);
             val tasks = new Vector<Future<?>>();
 
@@ -116,6 +126,7 @@ public class Walker {
                         .output(output)
                         .interval(interval)
                         .steps(steps)
+                        .hash(hash)
                         .threads(filesThreads)
                         .build();
 
