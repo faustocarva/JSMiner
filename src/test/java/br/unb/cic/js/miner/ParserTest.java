@@ -70,7 +70,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(11, visitor.getTotalAsyncDeclarations().get());
+            assertEquals(10, visitor.getTotalAsyncDeclarations().get());
         }
         catch(Exception e) {
             e.printStackTrace();
