@@ -183,26 +183,23 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	}
 
 	@Override
-	public Void visitClassElementMethodDefinition(ClassElementMethodDefinitionContext ctx) {
+	public Void visitMethodDefinition(MethodDefinitionContext ctx) {
 		if(ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
 		}
-		return super.visitClassElementMethodDefinition(ctx);
-	}
-
-	@Override
-	public Void visitClassElementAssigment(ClassElementAssigmentContext ctx) {
-		if(ctx.Async() != null) {
-			totalAsyncDeclarations.incrementAndGet();
-		}
-		return super.visitClassElementAssigment(ctx);
+		return super.visitMethodDefinition(ctx);
 	}
 
 	@Override
 	public Void visitNewExpression(NewExpressionContext ctx) {
-		if (ctx.singleExpression().getText().equals(PROMISE)) {
+		if (ctx.singleExpression() != null && ctx.singleExpression().getText().equals(PROMISE)) {
 			totalNewPromises.incrementAndGet();
 		}
+		if (ctx.identifier() != null && ctx.identifier().Identifier() != null && 
+			ctx.identifier().Identifier().getText().equals(PROMISE)) {
+			totalNewPromises.incrementAndGet();
+		}
+
 		return super.visitNewExpression(ctx);
 	}
 
