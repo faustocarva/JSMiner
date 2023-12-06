@@ -417,8 +417,8 @@ objectLiteral
     ;
 
 anonymousFunction
-    : Async? Function_ '*'? '(' formalParameterList? ')' functionBody    # AnonymousFunctionDecl
-    | Async? arrowFunctionParameters '=>' arrowFunctionBody                     # ArrowFunction
+    : {this.notFunctionDeclaration()}? Async? Function_ '*'? identifier? '(' formalParameterList? ')' functionBody    # AnonymousFunctionDecl
+    | Async? arrowFunctionParameters '=>' arrowFunctionBody                                                           # ArrowFunction
     ;
 
 arrowFunctionParameters

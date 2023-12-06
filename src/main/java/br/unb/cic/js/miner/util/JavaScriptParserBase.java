@@ -1,4 +1,5 @@
 package br.unb.cic.js.miner.util;
+
 import org.antlr.v4.runtime.*;
 
 import br.unb.cic.js.miner.JavaScriptParser;
@@ -7,8 +8,7 @@ import br.unb.cic.js.miner.JavaScriptParser;
  * All parser methods that used in grammar (p, prev, notLineTerminator, etc.)
  * should start with lower case char similar to parser rules.
  */
-public abstract class JavaScriptParserBase extends Parser
-{
+public abstract class JavaScriptParserBase extends Parser {
     public JavaScriptParserBase(TokenStream input) {
         super(input);
     }
@@ -60,22 +60,28 @@ public abstract class JavaScriptParserBase extends Parser
      * {@code HIDDEN} channel.
      *
      * @param type
-     *         the type of the token on the {@code HIDDEN} channel
-     *         to check.
+     *             the type of the token on the {@code HIDDEN} channel
+     *             to check.
      *
      * @return {@code true} iff on the current index of the parser's
-     * token stream a token of the given {@code type} exists on the
-     * {@code HIDDEN} channel.
+     *         token stream a token of the given {@code type} exists on the
+     *         {@code HIDDEN} channel.
      */
     private boolean here(final int type) {
 
-        // Get the token ahead of the current index.
-        int possibleIndexEosToken = this.getCurrentToken().getTokenIndex() - 1;
-        Token ahead = _input.get(possibleIndexEosToken);
+        // Get the most recently emitted token.
+        Token currentToken = _input.LT(-1);
+
+        // Get the next token index.
+        int nextTokenIndex = currentToken == null ? 0 : currentToken.getTokenIndex() + 1;
+
+        // Get the token after the `currentToken`. By using `_input.get(index)`,
+        // we also grab a token that is (possibly) on the HIDDEN channel.
+        Token nextToken = _input.get(nextTokenIndex);
 
         // Check if the token resides on the HIDDEN channel and if it's of the
         // provided type.
-        return (ahead.getChannel() == Lexer.HIDDEN) && (ahead.getType() == type);
+        return (nextToken.getChannel() == Lexer.HIDDEN) && (nextToken.getType() == type);
     }
 
     /**
@@ -85,14 +91,16 @@ public abstract class JavaScriptParserBase extends Parser
      * contains a line terminator.
      *
      * @return {@code true} iff on the current index of the parser's
-     * token stream a token exists on the {@code HIDDEN} channel which
-     * either is a line terminator, or is a multi line comment that
-     * contains a line terminator.
+     *         token stream a token exists on the {@code HIDDEN} channel which
+     *         either is a line terminator, or is a multi line comment that
+     *         contains a line terminator.
      */
     protected boolean lineTerminatorAhead() {
 
         // Get the token ahead of the current index.
         int possibleIndexEosToken = this.getCurrentToken().getTokenIndex() - 1;
+        if (possibleIndexEosToken < 0)
+            return false;
         Token ahead = _input.get(possibleIndexEosToken);
 
         if (ahead.getChannel() != Lexer.HIDDEN) {
@@ -108,6 +116,8 @@ public abstract class JavaScriptParserBase extends Parser
         if (ahead.getType() == JavaScriptParser.WhiteSpaces) {
             // Get the token ahead of the current whitespaces.
             possibleIndexEosToken = this.getCurrentToken().getTokenIndex() - 2;
+            if (possibleIndexEosToken < 0)
+                return false;
             ahead = _input.get(possibleIndexEosToken);
         }
 
@@ -118,5 +128,10 @@ public abstract class JavaScriptParserBase extends Parser
         // Check if the token is, or contains a line terminator.
         return (type == JavaScriptParser.MultiLineComment && (text.contains("\r") || text.contains("\n"))) ||
                 (type == JavaScriptParser.LineTerminator);
+    }
+
+    protected boolean notFunctionDeclaration() {
+        int ruleIndex = getInvokingContext(getContext().getRuleIndex()).getRuleIndex();
+        return ruleIndex != JavaScriptParser.RULE_statement;
     }
 }
