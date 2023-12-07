@@ -4,6 +4,12 @@ import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.walker.exception.NoBranchFoundException;
 import lombok.NoArgsConstructor;
 import lombok.val;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ResetCommand;
@@ -40,13 +46,17 @@ final class RepositoryWalkerGit {
         return repository.resolve("refs/heads/" + mainBranch);
     }
 
-    public static Iterable<RevCommit> revisions(final Repository repository, final ObjectId head, final Interval interval) throws Exception {
+    public static Iterable<RevCommit> revisions(final Repository repository, final ObjectId head,
+            final Interval interval) throws Exception {
         try (val git = new Git(repository)) {
-            return git.log()
+            List<RevCommit> revCommits = StreamSupport.stream(git.log()
                     .add(head)
                     .setRevFilter(CommitTimeRevFilter.between(interval.begin, interval.end))
-                    .setRevFilter(RevFilter.NO_MERGES)
-                    .call();
+                    .call().spliterator(), false)
+                    .filter(r -> r.getParentCount() == 1)
+                    .collect(Collectors.toList());
+            Collections.reverse(revCommits);
+            return revCommits;
         }
     }
 }

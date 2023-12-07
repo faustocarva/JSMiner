@@ -43,8 +43,7 @@ public final class Walker {
                 projectThreads,
                 filesThreads,
                 initialDate,
-                endDate
-        );
+                endDate);
 
         val f = new File(path);
         val p = Path.of(path);
@@ -58,7 +57,8 @@ public final class Walker {
         try {
             List<Path> repositories = new ArrayList<>();
 
-            // checking a file attribute to verify if it's a directory is slow, be careful with the amount of
+            // checking a file attribute to verify if it's a directory is slow, be careful
+            // with the amount of
             // folders you'll be checking against.
 
             if (project.isEmpty()) {
@@ -75,7 +75,8 @@ public final class Walker {
                 repositories.addAll(Files.find(p, 1, (path, attrs) -> {
                     val pathParts = path.toString().split("/");
 
-                    var isEqualPath = Arrays.stream(projects).anyMatch(project -> pathParts[pathParts.length - 1].equals(project));
+                    var isEqualPath = Arrays.stream(projects)
+                            .anyMatch(project -> pathParts[pathParts.length - 1].equals(project));
 
                     val isDirectory = attrs.isDirectory();
                     val isGitDirectory = path.resolve(".git").toFile().isDirectory();
@@ -90,12 +91,13 @@ public final class Walker {
             }
 
             // create a report directory and file that will contain the results
-            val output = Paths.get(p.toAbsolutePath().getParent().toString(), "jsminer-out");
+            val output = Paths.get(p.toAbsolutePath().getParent().toString(), "../jsminer-out");
             if (!output.toFile().exists()) {
                 Files.createDirectory(output);
             }
 
-            // check if a hash has been submitted, it will invalidate almost all of the settings and execute the
+            // check if a hash has been submitted, it will invalidate almost all of the
+            // settings and execute the
             // walker for a single commit hash.
             if (hash.length() > 0) {
                 assert (repositories.size() == 1);
@@ -114,7 +116,6 @@ public final class Walker {
                         .path(repositoryPath)
                         .project(repositoryName)
                         .build();
-
 
                 val interval = Interval.builder()
                         .begin(initialDate)
