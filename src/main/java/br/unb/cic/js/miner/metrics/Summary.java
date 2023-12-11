@@ -50,6 +50,10 @@ public class Summary {
                 .append(",spread-arguments")
                 .append(",array-destructuring")
                 .append(",object-destructuring")
+                .append(",optional-chain")
+                .append(",template-string-expressions")
+                .append(",object-properties")
+                .append(",regular-expressions")
                 .append(",errors")
                 .append(",statements\n");
 

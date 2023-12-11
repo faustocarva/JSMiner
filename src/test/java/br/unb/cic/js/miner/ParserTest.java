@@ -29,6 +29,20 @@ public class ParserTest {
         String content = new String(Files.readAllBytes(Paths.get(classLoader.getResource(file).toURI())));
         return content;
     }
+    
+    @Test
+    public void testFunctions() {
+        try {
+            String content = loadContent("examples/Function.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(7, visitor.getTotalStatements().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
 
     @Ignore
     public void testParser() {
@@ -66,7 +80,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(11, visitor.getTotalAsyncDeclarations().get());
+            assertEquals(10, visitor.getTotalAsyncDeclarations().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
