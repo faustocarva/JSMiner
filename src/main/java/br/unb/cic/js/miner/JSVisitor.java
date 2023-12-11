@@ -13,6 +13,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String THEN = "then";
 	private static final String ALL = "all";
 	private static final String PROMISE = "Promise";
+	private static final String OPTIONAL_CHAIN = "?.";
 
 	AtomicInteger totalArrowDeclarations = new AtomicInteger(0);
 	AtomicInteger totalAsyncDeclarations = new AtomicInteger(0);
@@ -31,6 +32,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalDefaultParameters = new AtomicInteger(0);
 	AtomicInteger totalSpreadArguments = new AtomicInteger(0);
 	AtomicInteger totalStatements = new AtomicInteger(0);
+	AtomicInteger totalOptionalChain = new AtomicInteger(0);
+	AtomicInteger totalTemplateStringExpressions = new AtomicInteger(0);
+	AtomicInteger totalObjectProperties = new AtomicInteger(0);
+	AtomicInteger totalRegularExpressions = new AtomicInteger(0);
 
 	@Override
 	public Void visitStatement(StatementContext ctx) {
@@ -250,5 +255,45 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 			totalSpreadArguments.incrementAndGet();
 		}
 		return super.visitArgument(ctx);
+	}
+	
+	@Override
+	public Void visitOptionalChainExpression(OptionalChainExpressionContext ctx) {
+		if (ctx.getChildCount() >= 2 && ctx.getChild(1).getText().contains(OPTIONAL_CHAIN)) {
+			totalOptionalChain.incrementAndGet();
+		}
+		return super.visitOptionalChainExpression(ctx);
+	}
+
+	@Override
+	public Void visitTemplateStringLiteral(TemplateStringLiteralContext ctx) {
+		if (ctx.templateStringAtom() != null) {
+			totalTemplateStringExpressions.incrementAndGet();
+		}
+		return super.visitTemplateStringLiteral(ctx);
+	}
+
+	@Override
+	public Void visitObjectLiteral(ObjectLiteralContext ctx) {
+		if (!ctx.isEmpty()) {
+			totalObjectProperties.incrementAndGet();
+		}
+		return super.visitObjectLiteral(ctx);
+	}
+
+	@Override
+	public Void visitPropertyExpressionAssignment(PropertyExpressionAssignmentContext ctx) {
+		if (ctx.propertyName().getText().contains("[") && ctx.propertyName().getText().contains("]")) {
+			totalObjectProperties.incrementAndGet();
+		}
+		return super.visitPropertyExpressionAssignment(ctx);
+	}
+
+	@Override
+	public Void visitLiteral(LiteralContext ctx) {
+		if (ctx.RegularExpressionLiteral() != null) {
+			totalRegularExpressions.incrementAndGet();
+		}
+		return super.visitLiteral(ctx);
 	}
 }

@@ -252,9 +252,18 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring().get())
 					.build());
+			
+			
+			metrics.add(Metric.builder().name("optional-chain").value(visitor.getTotalOptionalChain().get()).build());
+			metrics.add(Metric.builder().name("template-string-expressions").value(visitor.getTotalTemplateStringExpressions().get()).build());
+			metrics.add(Metric.builder().name("object-properties").value(visitor.getTotalObjectProperties().get()).build());
+			metrics.add(Metric.builder().name("regular-expressions").value(visitor.getTotalRegularExpressions().get()).build());
+			
+			
 			metrics.add(Metric.builder().name("errors").value(errors.size()).build());
 			metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
-
+			
+			
 			summary.date(current).revision(head.toString()).metrics(metrics).errors(errors);
 		} catch (Exception ex) {
 			val commit = commits.get(current).toString().split(" ")[1];
