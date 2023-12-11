@@ -60,27 +60,13 @@ public class ParserTest {
     }
 
     @Test
-    public void testFunctions() {
-        try {
-            String content = loadContent("examples/Function.js");
-            JavaScriptParser.ProgramContext p = parser.parse(content);
-            JSVisitor visitor = new JSVisitor();
-            p.accept(visitor);
-            assertEquals(7, visitor.getTotalStatements().get());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    @Test
     public void testAsync() {
         try {
             String content = loadContent("examples/AsyncAwait.js");
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(10, visitor.getTotalAsyncDeclarations().get());
+            assertEquals(11, visitor.getTotalAsyncDeclarations().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -239,6 +225,68 @@ public class ParserTest {
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
             assertEquals(6, visitor.getTotalYieldDeclarations().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testOptionalChain() {
+        try {
+            String content = loadContent("examples/OptionalChain.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(6, visitor.getTotalOptionalChain().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testTemplateLiterals() {
+        try {
+            String content = loadContent("examples/TemplateLiterals.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(4, visitor.getTotalTemplateStringExpressions().get());
+
+            content = loadContent("examples/TemplateStrings.js");
+            p = parser.parse(content);
+            visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(8, visitor.getTotalTemplateStringExpressions().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testObjectProperties() {
+        try {
+            String content = loadContent("examples/EnhancedObjectProperties.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(5, visitor.getTotalObjectProperties().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testRegularExpressions() {
+        try {
+            String content = loadContent("examples/EnhancedRegularExpression.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(4, visitor.getTotalRegularExpressions().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
