@@ -95,14 +95,16 @@ final class RepositoryWalkerGit {
 			revWalk.markStart(revWalk.parseCommit(branchObjectId));
 
 			if (merges == false) {
+				System.out.println("nada de merge, sai pra lá!");
 				return StreamSupport.stream(revWalk.spliterator(), false).filter(r -> r.getParentCount() == 1)
 						.collect(Collectors.toList());
 			} else {
+				System.out.println("caiu aqui, pois tem true e é pra considerar os merges");
 				return StreamSupport.stream(revWalk.spliterator(), false).collect(Collectors.toList());
 			}
 		}
 	}
-
+	
 	private static String getBranchNameFromLatestCommit(Repository repository, Git git) throws Exception {
 		try (RevWalk revWalk = new RevWalk(repository)) {
 			var mainBranch = "";

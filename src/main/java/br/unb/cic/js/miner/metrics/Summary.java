@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
@@ -51,10 +50,6 @@ public class Summary {
                 .append(",spread-arguments")
                 .append(",array-destructuring")
                 .append(",object-destructuring")
-                .append(",optional-chain")
-                .append(",template-string-expressions")
-                .append(",object-properties")
-                .append(",regular-expressions")
                 .append(",errors")
                 .append(",statements\n");
 
