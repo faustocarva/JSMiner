@@ -32,18 +32,21 @@ public final class Walker {
     public final int filesThreads;
     public final Date initialDate;
     public final Date endDate;
+    public final Boolean merges;
 
     public void traverse() {
         logger.info("initializing git traversal");
-        logger.info(
-                "path: {} | project: {} | steps: {} | project threads: {} |  files threads: {} | initial date: {} | end date: {}",
+        
+		logger.info(
+                "path: {} | project: {} | steps: {} | project threads: {} |  files threads: {} | initial date: {} | end date: {} | merges: {}",
                 path,
                 project,
                 steps,
                 projectThreads,
                 filesThreads,
                 initialDate,
-                endDate);
+                endDate,
+                merges);
 
         val f = new File(path);
         val p = Path.of(path);
@@ -115,6 +118,7 @@ public final class Walker {
                 val walker = RepositoryWalker.builder()
                         .path(repositoryPath)
                         .project(repositoryName)
+                        .merges(merges)
                         .build();
 
                 val interval = Interval.builder()

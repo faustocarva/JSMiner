@@ -26,6 +26,7 @@ public class App {
 
         try {
             val walker = Walker.builder()
+            		.merges(arguments.merges)
                     .path(arguments.directory)
                     .project(arguments.project)
                     .steps(arguments.steps)

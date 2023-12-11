@@ -27,6 +27,9 @@ public class Args {
     @Parameter(names = {"--hash"}, description = "A commit hash to be verified")
     public String hash = "";
 
+    @Parameter(names = {"--merges"}, description = "List commits with/without merge commits")
+    public Boolean merges = false;
+    
     @Parameter(names = {"-h", "--help"}, help = true, description = "Show help")
     private boolean help;
 }

@@ -35,6 +35,7 @@ public final class RepositoryWalker {
 
 	public final String project;
 	public final Path path;
+	public final Boolean merges;
 
 	private final List<Summary> summaries = Collections.synchronizedList(new ArrayList<>());
 
@@ -55,7 +56,7 @@ public final class RepositoryWalker {
 		repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
 		val head = RepositoryWalkerGit.head(repository);
-		val revisions = RepositoryWalkerGit.revisions(repository);
+		val revisions = RepositoryWalkerGit.revisions(repository,merges);
 
 		val commits = new HashMap<Date, ObjectId>();
 		val commitDates = new HashSet<Date>(); // Use a HashSet for unique dates
@@ -91,8 +92,8 @@ public final class RepositoryWalker {
 		val totalGroups = sortedCommitDates.size();
 		val totalCommits = commits.size();
 
-		logger.info("{} -- number of commits {} ", project, totalCommits);
-		logger.info("{} -- number of groups {} ", project, totalGroups);
+		logger.info("{} -- total of commits {} ", project, totalCommits);
+		logger.info("{} -- number of commit {} ", project, totalGroups);
 
 		val profiler = new Profiler();
 
@@ -105,7 +106,7 @@ public final class RepositoryWalker {
 
 			profiler.stop();
 
-			logger.info("{} -- collected commit group {} of {} (took {}ms to collect)", project, traversed, totalGroups,
+			logger.info("{} -- collected commit {} of {} (took {}ms to collect)", project, traversed, totalGroups,
 					profiler.last());
 
 			summaries.add(summary);
@@ -114,7 +115,7 @@ public final class RepositoryWalker {
 		val average = profiler.average();
 		val total = (double) profiler.total() / 1000.0;
 
-		logger.info("{} -- finished, took {}ms in average to collect each commit group and {}s in total", project,
+		logger.info("{} -- finished, took {}ms in average to collect each commit and {}s in total", project,
 				average, total);
 
 		return summaries;
@@ -136,7 +137,7 @@ public final class RepositoryWalker {
 		repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
 		val head = RepositoryWalkerGit.head(repository);
-		val revisions = RepositoryWalkerGit.revisions(repository);
+		val revisions = RepositoryWalkerGit.revisions(repository,merges);
 
 		val commits = new HashMap<Date, ObjectId>();
 
