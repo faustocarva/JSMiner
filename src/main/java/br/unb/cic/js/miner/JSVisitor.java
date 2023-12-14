@@ -51,7 +51,6 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 		statements.add(ctx.variableStatement() != null);
 		statements.add(ctx.importStatement() != null);
-		statements.add(ctx.importStatement() != null);
 		statements.add(ctx.block() != null);
 		statements.add(ctx.exportStatement() != null);
 		statements.add(ctx.emptyStatement_() != null);
@@ -341,9 +340,5 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitAssignmentOperator(ctx);
 	}
-	
-	
-	
-	
 	
 }

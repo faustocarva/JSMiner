@@ -40,3 +40,18 @@ import React from 'react';
 
 import { name as squareName, draw } from "./shapes/square.js";
 import { name as circleName } from "https://example.com/shapes/circle.js";
+
+
+// main.js
+import * as mod from "/my-module.js";
+
+import("/my-module.js").then((mod2) => {
+  // Logs "then() called"
+  console.log(mod === mod2); // false
+});
+
+// my-module.js
+export function then(resolve) {
+  console.log("then() called");
+  resolve(1);
+}
