@@ -80,6 +80,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.statement() != null) {
 			totalStatements.incrementAndGet();
 		}
+		
 		return super.visitStatementList(ctx);
 	}
 
@@ -88,6 +89,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
 		}
+		
 		return super.visitFunctionDeclaration(ctx);
 	}
 
@@ -309,6 +311,17 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitCoalesceExpression(ctx);
 	}
+
+	@Override
+	public Void visitForOfStatement(ForOfStatementContext ctx) {
+		
+		if(ctx.Await() != null) {
+			totalAwaitDeclarations.incrementAndGet();
+		}
+		return super.visitForOfStatement(ctx);
+	}
+	
+	
 	
 	
 	

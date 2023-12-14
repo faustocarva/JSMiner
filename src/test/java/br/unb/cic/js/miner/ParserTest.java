@@ -80,7 +80,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(10, visitor.getTotalAsyncDeclarations().get());
+            assertEquals(12, visitor.getTotalAsyncDeclarations().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -167,7 +167,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(3, visitor.getTotalAwaitDeclarations().get());
+            assertEquals(4, visitor.getTotalAwaitDeclarations().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
