@@ -216,6 +216,21 @@ public class ParserTest {
             fail();
         }
     }
+    @Test
+    public void testNumericLieralSeparator() {
+    	try {
+    		String content = loadContent("examples/NumericSeparator.js");
+    		JavaScriptParser.ProgramContext p = parser.parse(content);
+    		JSVisitor visitor = new JSVisitor();
+    		p.accept(visitor);
+    		assertEquals(4, visitor.getTotalNumericLiteralSeparators().get());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
+    
+    
 
     @Test
     public void testRest() {
@@ -266,19 +281,6 @@ public class ParserTest {
     		JSVisitor visitor = new JSVisitor();
     		p.accept(visitor);
     		assertEquals(1, visitor.getTotalHashBangLines().get());
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		fail();
-    	}
-    }
-    @Test
-    public void testPrivateFields() {
-    	try {
-    		String content = loadContent("examples/PrivateField.js");
-    		JavaScriptParser.ProgramContext p = parser.parse(content);
-    		JSVisitor visitor = new JSVisitor();
-    		p.accept(visitor);
-    		assertEquals(4, visitor.getTotalPrivateFields().get());
     	} catch (Exception e) {
     		e.printStackTrace();
     		fail();

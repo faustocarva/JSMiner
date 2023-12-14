@@ -58,6 +58,7 @@ public class Summary {
                 .append(",hashbang-comments")
                 .append(",exponentiation-assignments")
                 .append(",private-fields")
+                .append(",numeric-separator")
                 .append(",errors")
                 .append(",statements\n");
 

@@ -269,6 +269,8 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("private-fields").value(visitor.getTotalPrivateFields().get())
 					.build());
+			metrics.add(Metric.builder().name("numeric-separator").value(visitor.getTotalNumericLiteralSeparators().get())
+					.build());
 			
 			metrics.add(Metric.builder().name("errors").value(errors.size()).build());
 			metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());

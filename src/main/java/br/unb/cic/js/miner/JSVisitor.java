@@ -15,6 +15,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String PROMISE = "Promise";
 	private static final String OPTIONAL_CHAIN = "?.";
 	private static final String EXPONENTIATION = "**=";
+	private static final String NUMERIC_SEPARATOR = "_";
 
 	AtomicInteger totalArrowDeclarations = new AtomicInteger(0);
 	AtomicInteger totalAsyncDeclarations = new AtomicInteger(0);
@@ -41,6 +42,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalHashBangLines = new AtomicInteger(0);	
 	AtomicInteger totalExponentiationAssignments = new AtomicInteger(0);	
 	AtomicInteger totalPrivateFields = new AtomicInteger(0);	
+	AtomicInteger totalNumericLiteralSeparators = new AtomicInteger(0);	
 	
 	
 	AtomicInteger totalStatements = new AtomicInteger(0);
@@ -298,6 +300,8 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitPropertyExpressionAssignment(ctx);
 	}
+	
+	
 
 	@Override
 	public Void visitLiteral(LiteralContext ctx) {
@@ -350,6 +354,16 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitFieldDefinition(ctx);
 	}
+
+	@Override
+	public Void visitLiteralExpression(LiteralExpressionContext ctx) {
+		if(ctx.literal().numericLiteral() !=null && ctx.literal().getText().contains(NUMERIC_SEPARATOR)) {
+			totalNumericLiteralSeparators.incrementAndGet();
+		}
+		return super.visitLiteralExpression(ctx);
+	}
+	
+	
 	
 	
 
