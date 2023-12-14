@@ -14,6 +14,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String ALL = "all";
 	private static final String PROMISE = "Promise";
 	private static final String OPTIONAL_CHAIN = "?.";
+	private static final String EXPONENTIATION = "**=";
 
 	AtomicInteger totalArrowDeclarations = new AtomicInteger(0);
 	AtomicInteger totalAsyncDeclarations = new AtomicInteger(0);
@@ -38,6 +39,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalRegularExpressions = new AtomicInteger(0);
 	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);	
 	AtomicInteger totalHashBangLines = new AtomicInteger(0);	
+	AtomicInteger totalExponentiationAssignments = new AtomicInteger(0);	
 	
 	
 	AtomicInteger totalStatements = new AtomicInteger(0);
@@ -331,6 +333,16 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		
 		return super.visitProgram(ctx);
 	}
+
+	@Override
+	public Void visitAssignmentOperator(AssignmentOperatorContext ctx) {
+		if(ctx.getText().contains(EXPONENTIATION)) {
+			totalExponentiationAssignments.incrementAndGet();
+		}
+		return super.visitAssignmentOperator(ctx);
+	}
+	
+	
 	
 	
 	

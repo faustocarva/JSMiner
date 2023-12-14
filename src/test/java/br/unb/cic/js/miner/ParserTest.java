@@ -333,6 +333,19 @@ public class ParserTest {
             fail();
         }
     }
+    @Test
+    public void testExponentiationAssigments() {
+    	try {
+    		String content = loadContent("examples/ExponentiationAssignment.js");
+    		JavaScriptParser.ProgramContext p = parser.parse(content);
+    		JSVisitor visitor = new JSVisitor();
+    		p.accept(visitor);
+    		assertEquals(6, visitor.getTotalExponentiationAssignments().get());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
 
     @Ignore
     public void testParserReact() throws Exception {

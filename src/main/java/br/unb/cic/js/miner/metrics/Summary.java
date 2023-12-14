@@ -56,6 +56,7 @@ public class Summary {
                 .append(",null-coalesce-operators")
                 .append(",regular-expressions")
                 .append(",hashbang-comments")
+                .append(",exponentiation-assignments")
                 .append(",errors")
                 .append(",statements\n");
 
