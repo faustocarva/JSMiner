@@ -261,7 +261,8 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("regular-expressions").value(visitor.getTotalRegularExpressions().get())
 					.build());
-			
+			metrics.add(Metric.builder().name("null-coalesce-operators").value(visitor.getTotalNullCoalesceOperators().get())
+					.build());
 			
 			metrics.add(Metric.builder().name("errors").value(errors.size()).build());
 			metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());

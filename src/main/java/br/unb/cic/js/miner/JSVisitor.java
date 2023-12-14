@@ -36,8 +36,11 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalTemplateStringExpressions = new AtomicInteger(0);
 	AtomicInteger totalObjectProperties = new AtomicInteger(0);
 	AtomicInteger totalRegularExpressions = new AtomicInteger(0);
+	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);	
+	
 	
 	AtomicInteger totalStatements = new AtomicInteger(0);
+	
 
 	@Override
 	public Void visitStatement(StatementContext ctx) {
@@ -298,4 +301,16 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitLiteral(ctx);
 	}
+
+	@Override
+	public Void visitCoalesceExpression(CoalesceExpressionContext ctx) {
+		if(ctx.NullCoalesce() != null) {
+			totalNullCoalesceOperators.incrementAndGet();
+		}
+		return super.visitCoalesceExpression(ctx);
+	}
+	
+	
+	
+	
 }

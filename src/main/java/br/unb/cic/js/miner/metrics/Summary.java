@@ -53,6 +53,7 @@ public class Summary {
                 .append(",optional-chain")
                 .append(",template-string-expressions")
                 .append(",object-properties")
+                .append(",null-coalesce-operators")
                 .append(",regular-expressions")
                 .append(",errors")
                 .append(",statements\n");

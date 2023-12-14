@@ -86,6 +86,20 @@ public class ParserTest {
             fail();
         }
     }
+    
+    @Test
+    public void testNullCoalesce() {
+        try {
+            String content = loadContent("examples/NullCoalesce.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(5, visitor.getTotalNullCoalesceOperators().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
 
     @Test
     public void testDestructuring() {
