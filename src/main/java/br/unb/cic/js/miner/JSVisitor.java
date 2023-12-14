@@ -16,6 +16,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String OPTIONAL_CHAIN = "?.";
 	private static final String EXPONENTIATION = "**=";
 	private static final String NUMERIC_SEPARATOR = "_";
+	private static final String BIGINT = "BigInt";
 
 	AtomicInteger totalArrowDeclarations = new AtomicInteger(0);
 	AtomicInteger totalAsyncDeclarations = new AtomicInteger(0);
@@ -33,20 +34,19 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalObjectDestructuring = new AtomicInteger(0);
 	AtomicInteger totalDefaultParameters = new AtomicInteger(0);
 	AtomicInteger totalSpreadArguments = new AtomicInteger(0);
-	
+
 	AtomicInteger totalOptionalChain = new AtomicInteger(0);
 	AtomicInteger totalTemplateStringExpressions = new AtomicInteger(0);
 	AtomicInteger totalObjectProperties = new AtomicInteger(0);
 	AtomicInteger totalRegularExpressions = new AtomicInteger(0);
-	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);	
-	AtomicInteger totalHashBangLines = new AtomicInteger(0);	
-	AtomicInteger totalExponentiationAssignments = new AtomicInteger(0);	
-	AtomicInteger totalPrivateFields = new AtomicInteger(0);	
-	AtomicInteger totalNumericLiteralSeparators = new AtomicInteger(0);	
-	
-	
+	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);
+	AtomicInteger totalHashBangLines = new AtomicInteger(0);
+	AtomicInteger totalExponentiationAssignments = new AtomicInteger(0);
+	AtomicInteger totalPrivateFields = new AtomicInteger(0);
+	AtomicInteger totalNumericLiteralSeparators = new AtomicInteger(0);
+	AtomicInteger totalBigInt = new AtomicInteger(0);
+
 	AtomicInteger totalStatements = new AtomicInteger(0);
-	
 
 	@Override
 	public Void visitStatement(StatementContext ctx) {
@@ -67,7 +67,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		statements.add(ctx.yieldStatement() != null);
 		statements.add(ctx.withStatement() != null);
 		statements.add(ctx.labelledStatement() != null);
-		statements.add(ctx.switchStatement()!= null);
+		statements.add(ctx.switchStatement() != null);
 		statements.add(ctx.throwStatement() != null);
 		statements.add(ctx.tryStatement() != null);
 		statements.add(ctx.debuggerStatement() != null);
@@ -85,7 +85,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.statement() != null) {
 			totalStatements.incrementAndGet();
 		}
-		
+
 		return super.visitStatementList(ctx);
 	}
 
@@ -94,7 +94,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
 		}
-		
+
 		return super.visitFunctionDeclaration(ctx);
 	}
 
@@ -201,7 +201,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitMethodDefinition(MethodDefinitionContext ctx) {
-		if(ctx.Async() != null) {
+		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
 		}
 		return super.visitMethodDefinition(ctx);
@@ -212,8 +212,8 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.singleExpression() != null && ctx.singleExpression().getText().equals(PROMISE)) {
 			totalNewPromises.incrementAndGet();
 		}
-		if (ctx.identifier() != null && ctx.identifier().Identifier() != null && 
-			ctx.identifier().Identifier().getText().equals(PROMISE)) {
+		if (ctx.identifier() != null && ctx.identifier().Identifier() != null
+				&& ctx.identifier().Identifier().getText().equals(PROMISE)) {
 			totalNewPromises.incrementAndGet();
 		}
 
@@ -222,10 +222,11 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitArgumentsExpression(ArgumentsExpressionContext ctx) {
-		if (ctx.singleExpression().getText().contains(PROMISE) &&
-				ctx.singleExpression().getText().contains(ALL) &&
-				ctx.singleExpression().getText().contains(THEN)) {
+		if (ctx.singleExpression().getText().contains(PROMISE) && ctx.singleExpression().getText().contains(ALL)
+				&& ctx.singleExpression().getText().contains(THEN)) {
 			totalPromiseAllAndThenIdiom.incrementAndGet();
+		}else if(ctx.singleExpression().getText().contains(BIGINT)) {
+			totalBigInt.incrementAndGet();
 		}
 		return super.visitArgumentsExpression(ctx);
 	}
@@ -234,7 +235,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitAssignmentExpression(AssignmentExpressionContext ctx) {
 		if (ctx.singleExpression().get(0) instanceof ArrayLiteralExpressionContext) {
 			totalArrayDestructuring.incrementAndGet();
-		}else if(ctx.singleExpression().get(0) instanceof ObjectLiteralExpressionContext) {
+		} else if (ctx.singleExpression().get(0) instanceof ObjectLiteralExpressionContext) {
 			totalObjectDestructuring.incrementAndGet();
 		}
 		return super.visitAssignmentExpression(ctx);
@@ -242,11 +243,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitVariableDeclaration(VariableDeclarationContext ctx) {
-		if(ctx.singleExpression() != null && !ctx.assignable().isEmpty()) {
+		if (ctx.singleExpression() != null && !ctx.assignable().isEmpty()) {
 			if (ctx.assignable().arrayLiteral() != null) {
 				totalArrayDestructuring.incrementAndGet();
-			}
-			else if (ctx.assignable().objectLiteral() != null) {
+			} else if (ctx.assignable().objectLiteral() != null) {
 				totalObjectDestructuring.incrementAndGet();
 			}
 		}
@@ -268,7 +268,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitArgument(ctx);
 	}
-	
+
 	@Override
 	public Void visitOptionalChainExpression(OptionalChainExpressionContext ctx) {
 		if (ctx.getChildCount() >= 2 && ctx.getChild(1).getText().contains(OPTIONAL_CHAIN)) {
@@ -300,11 +300,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitPropertyExpressionAssignment(ctx);
 	}
-	
-	
 
 	@Override
 	public Void visitLiteral(LiteralContext ctx) {
+		
 		if (ctx.RegularExpressionLiteral() != null) {
 			totalRegularExpressions.incrementAndGet();
 		}
@@ -313,7 +312,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitCoalesceExpression(CoalesceExpressionContext ctx) {
-		if(ctx.NullCoalesce() != null) {
+		if (ctx.NullCoalesce() != null) {
 			totalNullCoalesceOperators.incrementAndGet();
 		}
 		return super.visitCoalesceExpression(ctx);
@@ -321,8 +320,8 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitForOfStatement(ForOfStatementContext ctx) {
-		
-		if(ctx.Await() != null) {
+
+		if (ctx.Await() != null) {
 			totalAwaitDeclarations.incrementAndGet();
 		}
 		return super.visitForOfStatement(ctx);
@@ -330,26 +329,25 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitProgram(ProgramContext ctx) {
-		
-		if(ctx.HashBangLine() != null) {
+
+		if (ctx.HashBangLine() != null) {
 			totalHashBangLines.incrementAndGet();
 		}
-		
+
 		return super.visitProgram(ctx);
 	}
 
 	@Override
 	public Void visitAssignmentOperator(AssignmentOperatorContext ctx) {
-		if(ctx.getText().contains(EXPONENTIATION)) {
+		if (ctx.getText().contains(EXPONENTIATION)) {
 			totalExponentiationAssignments.incrementAndGet();
 		}
 		return super.visitAssignmentOperator(ctx);
 	}
 
-
 	@Override
 	public Void visitFieldDefinition(FieldDefinitionContext ctx) {
-		if(ctx.classElementName().privateIdentifier() != null) {
+		if (ctx.classElementName().privateIdentifier() != null) {
 			totalPrivateFields.incrementAndGet();
 		}
 		return super.visitFieldDefinition(ctx);
@@ -357,12 +355,26 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 	@Override
 	public Void visitLiteralExpression(LiteralExpressionContext ctx) {
-		if(ctx.literal().numericLiteral() !=null && ctx.literal().getText().contains(NUMERIC_SEPARATOR)) {
+		
+		if (ctx.literal().numericLiteral() != null && ctx.literal().getText().contains(NUMERIC_SEPARATOR)) {
 			totalNumericLiteralSeparators.incrementAndGet();
 		}
 		return super.visitLiteralExpression(ctx);
 	}
-	
+
+	@Override
+	public Void visitBigintLiteral(BigintLiteralContext ctx) {
+		if (!ctx.isEmpty()) {
+			totalBigInt.incrementAndGet();
+		}
+		return super.visitBigintLiteral(ctx);
+	}
+
+	@Override
+	public Void visitFunctionExpression(FunctionExpressionContext ctx) {
+		
+		return super.visitFunctionExpression(ctx);
+	}
 	
 	
 	

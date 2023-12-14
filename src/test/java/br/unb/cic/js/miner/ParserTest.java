@@ -216,6 +216,7 @@ public class ParserTest {
             fail();
         }
     }
+    
     @Test
     public void testNumericLieralSeparator() {
     	try {
@@ -229,7 +230,19 @@ public class ParserTest {
     		fail();
     	}
     }
-    
+    @Test
+    public void testBigInt() {
+    	try {
+    		String content = loadContent("examples/BigIntLiteral.js");
+    		JavaScriptParser.ProgramContext p = parser.parse(content);
+    		JSVisitor visitor = new JSVisitor();
+    		p.accept(visitor);
+    		assertEquals(9, visitor.getTotalBigInt().get());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
     
 
     @Test

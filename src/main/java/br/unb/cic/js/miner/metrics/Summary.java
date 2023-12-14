@@ -59,6 +59,7 @@ public class Summary {
                 .append(",exponentiation-assignments")
                 .append(",private-fields")
                 .append(",numeric-separator")
+                .append(",big-int")
                 .append(",errors")
                 .append(",statements\n");
 
