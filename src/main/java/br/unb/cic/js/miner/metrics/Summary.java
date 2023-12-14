@@ -55,6 +55,7 @@ public class Summary {
                 .append(",object-properties")
                 .append(",null-coalesce-operators")
                 .append(",regular-expressions")
+                .append(",hashbang-comments")
                 .append(",errors")
                 .append(",statements\n");
 

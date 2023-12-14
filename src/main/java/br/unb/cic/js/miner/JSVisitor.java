@@ -37,6 +37,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalObjectProperties = new AtomicInteger(0);
 	AtomicInteger totalRegularExpressions = new AtomicInteger(0);
 	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);	
+	AtomicInteger totalHashBangLines = new AtomicInteger(0);	
 	
 	
 	AtomicInteger totalStatements = new AtomicInteger(0);
@@ -320,9 +321,16 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitForOfStatement(ctx);
 	}
-	
-	
-	
+
+	@Override
+	public Void visitProgram(ProgramContext ctx) {
+		
+		if(ctx.HashBangLine() != null) {
+			totalHashBangLines.incrementAndGet();
+		}
+		
+		return super.visitProgram(ctx);
+	}
 	
 	
 	

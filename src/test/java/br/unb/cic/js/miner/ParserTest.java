@@ -258,6 +258,19 @@ public class ParserTest {
             fail();
         }
     }
+    @Test
+    public void testHashBangComment() {
+    	try {
+    		String content = loadContent("examples/HashBangComment.js");
+    		JavaScriptParser.ProgramContext p = parser.parse(content);
+    		JSVisitor visitor = new JSVisitor();
+    		p.accept(visitor);
+    		assertEquals(1, visitor.getTotalHashBangLines().get());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
 
     @Test
     public void testOptionalChain() {

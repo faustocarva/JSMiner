@@ -140,6 +140,7 @@ let Obj = {
     }
 }
 
+//new added code to test
 
 const asyncIterator = (async function* () {
   yield 1;
