@@ -57,6 +57,7 @@ public class Summary {
                 .append(",regular-expressions")
                 .append(",hashbang-comments")
                 .append(",exponentiation-assignments")
+                .append(",private-fields")
                 .append(",errors")
                 .append(",statements\n");
 

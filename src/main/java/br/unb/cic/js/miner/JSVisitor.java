@@ -40,6 +40,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalNullCoalesceOperators = new AtomicInteger(0);	
 	AtomicInteger totalHashBangLines = new AtomicInteger(0);	
 	AtomicInteger totalExponentiationAssignments = new AtomicInteger(0);	
+	AtomicInteger totalPrivateFields = new AtomicInteger(0);	
 	
 	
 	AtomicInteger totalStatements = new AtomicInteger(0);
@@ -340,5 +341,16 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		}
 		return super.visitAssignmentOperator(ctx);
 	}
+
+
+	@Override
+	public Void visitFieldDefinition(FieldDefinitionContext ctx) {
+		if(ctx.classElementName().privateIdentifier() != null) {
+			totalPrivateFields.incrementAndGet();
+		}
+		return super.visitFieldDefinition(ctx);
+	}
 	
+	
+
 }
