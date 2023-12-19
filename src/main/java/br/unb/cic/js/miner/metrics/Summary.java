@@ -3,11 +3,9 @@ package br.unb.cic.js.miner.metrics;
 import lombok.Builder;
 import lombok.val;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * Summary represents a collection of metrics for a given project, at a given date and on a given revision.

@@ -181,7 +181,7 @@ public final class RepositoryWalker {
 
 			metrics.add(Metric.builder().name("revision").value(commit).build());
 
-			git.reset().setMode(ResetCommand.ResetType.HARD).call();
+			git.reset().setMode(ResetCommand.ResetType.HARD).setRef("origin/HEAD").call();
 			git.checkout().setName(id.getName()).call();
 
 			val walker = Files.walk(path, FileVisitOption.FOLLOW_LINKS);
