@@ -225,8 +225,6 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.singleExpression().getText().contains(PROMISE) && ctx.singleExpression().getText().contains(ALL)
 				&& ctx.singleExpression().getText().contains(THEN)) {
 			totalPromiseAllAndThenIdiom.incrementAndGet();
-		}else if(ctx.singleExpression().getText().contains(BIGINT)) {
-			totalBigInt.incrementAndGet();
 		}
 		return super.visitArgumentsExpression(ctx);
 	}

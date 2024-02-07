@@ -131,7 +131,7 @@ public final class RepositoryWalker {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Summary> traverse(final Interval interval, final String hash, final int threads) throws Exception {
+	public List<Summary> traverse(final Interval interval, final String[] hash, final int threads) throws Exception {
 		logger.info("{} -- processing project for a single revision", project);
 
 		repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
@@ -145,7 +145,7 @@ public final class RepositoryWalker {
 			val id = revision.toObjectId();
 			val commit = repository.parseCommit(id).getId().toString().split(" ")[1];
 
-			if (commit.equals(hash)) {
+			if (Arrays.asList(hash).contains(commit)) {
 				val commitTimeInSeconds = revision.getCommitTime();
 				val current = new Date((long) commitTimeInSeconds * 1000);
 
@@ -259,9 +259,9 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("object-properties").value(visitor.getTotalObjectProperties().get())
 					.build());
-			metrics.add(Metric.builder().name("regular-expressions").value(visitor.getTotalRegularExpressions().get())
-					.build());
 			metrics.add(Metric.builder().name("null-coalesce-operators").value(visitor.getTotalNullCoalesceOperators().get())
+					.build());
+			metrics.add(Metric.builder().name("regular-expressions").value(visitor.getTotalRegularExpressions().get())
 					.build());
 			metrics.add(Metric.builder().name("hashbang-comments").value(visitor.getTotalHashBangLines().get())
 					.build());
