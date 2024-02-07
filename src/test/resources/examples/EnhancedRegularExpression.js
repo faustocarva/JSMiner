@@ -30,3 +30,24 @@ parser("Foo 1 Bar 7 Baz 42", [
     { pattern: /^Baz\s+(\d+)/y, action: (match) => report(match) },
     { pattern: /^\s*/y,         action: (match) => {}            }
 ])
+
+const regex1 = /(?<=@)\w+/;
+const match1 = regex1.exec('user@example.com');
+
+const regex = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const match = regex.exec('2022-01-01');
+
+console.log(match.groups.year); // Output: 2022
+console.log(match.groups.month); // Output: 01
+console.log(match.groups.day); // Output: 01
+
+
+//Old method before ECMAScript 2015
+var regexOld = /\(\d{3}\)\s\d{4}-\d{4}/;
+var telefone = "(123) 4567-8901";
+
+if (regexOld.test(telefone)) {
+    console.log("Número de telefone válido.");
+} else {
+    console.log("Número de telefone inválido.");
+}

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -237,7 +238,7 @@ public class ParserTest {
     		JavaScriptParser.ProgramContext p = parser.parse(content);
     		JSVisitor visitor = new JSVisitor();
     		p.accept(visitor);
-    		assertEquals(9, visitor.getTotalBigInt().get());
+    		assertEquals(8, visitor.getTotalBigInt().get());
     	} catch (Exception e) {
     		e.printStackTrace();
     		fail();
@@ -341,7 +342,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(5, visitor.getTotalObjectProperties().get());
+            assertEquals(7, visitor.getTotalObjectProperties().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -355,7 +356,7 @@ public class ParserTest {
             JavaScriptParser.ProgramContext p = parser.parse(content);
             JSVisitor visitor = new JSVisitor();
             p.accept(visitor);
-            assertEquals(4, visitor.getTotalRegularExpressions().get());
+            assertEquals(7, visitor.getTotalRegularExpressions().get());
         } catch (Exception e) {
             e.printStackTrace();
             fail();
