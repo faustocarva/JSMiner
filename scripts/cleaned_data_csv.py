@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Carregue o DataFrame original
-df_original = pd.read_csv('/home/walterlucas/Documents/JSMiner/scripts/results.csv', delimiter=',')
+df_original = pd.read_csv('~/Documents/JSMiner/scripts/results.csv', delimiter=',')
 # Defina a coluna 'date' como data
 df_original['date'] = pd.to_datetime(df_original['date'], format='%d-%m-%Y')  # Use '%d-%m-%Y' em vez de '%Y-%m-%d'
 # df_original['date'] = df_original['date'].dt.strftime('%d-%m-%Y')

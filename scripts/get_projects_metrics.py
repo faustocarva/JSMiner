@@ -46,13 +46,13 @@ def gerar_csv(lista_projetos, arquivo_csv):
             writer.writerow(estatisticas)
 
 # Diretório contendo várias pastas de projetos do GitHub
-diretorio_base = r'~/Downloads/dataset'
+diretorio_base = r'/home/walterlucas/Downloads/dataset'
 
 # Lista de projetos (subdiretórios)
 projetos = [os.path.join(diretorio_base, projeto) for projeto in os.listdir(diretorio_base) if os.path.isdir(os.path.join(diretorio_base, projeto))]
 
 # Arquivo CSV de saída
-arquivo_csv_saida = r'~/Documents/JSMiner/scripts/projects_cloc_metrics.csv'
+arquivo_csv_saida = r'/home/walterlucas/Documents/JSMiner/scripts/projects_cloc_metrics.csv'
 
 # Gere o CSV com as estatísticas para cada projeto
 gerar_csv(projetos, arquivo_csv_saida)

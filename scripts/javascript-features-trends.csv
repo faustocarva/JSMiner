@@ -1,0 +1,25 @@
+Feature,Year Release,Start Trend
+Arrow Function Declarations,ES6 (2015),12/2012
+Async Declarations,ES2017 (ES8) (2017),05/2020
+Const Declarations,ES6 (2015),06/2021
+Let Declarations,ES6 (2015),04/2021
+Template String Expressions,ES6 (2015),07/2021
+Promise Declarations,ES6 (2015),12/2021
+Object Destructuring,ES6 (2015),02/2019
+Await Declarations,ES2017 (ES8) (2017),01/2023
+Default Parameters,ES6 (2015),07/2020
+Class Declarations,ES6 (2015),07/2020
+Promise All() and Then(),ES6 (2015),10/2016
+Import Statements,ES6 (2015),12/2019
+Export Declarations,ES6 (2015),06/2018
+Spread Arguments,ES6 (2015),12/2022
+Array Destructuring,ES6 (2015),11/2019
+Rest Statements,ES6 (2015),01/2018
+Optional Chain,ES11 (ES2020) (2020),03/2020
+Hashbang Comments,ES6 (2015),03/2013
+,,
+,,
+Yield Declarations,ES6 (2015),07/2018
+Null Coalesce Operators,ES11 (ES2020) (2020),03/2022
+Private Fields,ES8 (2017),12/2022
+Numeric Separator,ES11 (ES2020) (2020),08/2021

@@ -5,7 +5,7 @@ import statsmodels.api as sm
 import seaborn as sns
 from statsmodels.nonparametric.smoothers_lowess import lowess
 
-df = pd.read_csv('/home/walterlucas/Documents/JSMiner/scripts/results-without-gaps.csv')
+df = pd.read_csv('~/Documents/JSMiner/scripts/results-without-gaps.csv')
 
 df = df.drop(columns=['revision', 'errors'])
 df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
@@ -41,27 +41,27 @@ melted_df = melted_df.sort_values(by='year_month')
 features = [
     'async_declarations',
     'await_declarations',
-    'const_declarations',
-    'class_declarations',
-    'arrow_function_declarations',
-    'let_declarations',
-    'export_declarations',
-    'yield_declarations',
-    'import_statements',
-    'promise_declarations',
-    'promise_all_and_then',
-    'default_parameters',
-    'rest_statements',
-    'spread_arguments',
-    'array_destructuring',
-    'object_destructuring',
-    'yield_declarations',
-    'optional_chain',
-    'template_string_expressions',
-    'null_coalesce_operators',
-    'hashbang_comments',
-    'private_fields',
-    'numeric_separator',
+    # 'const_declarations',
+    # 'class_declarations',
+    # 'arrow_function_declarations',
+    # 'let_declarations',
+    # 'export_declarations',
+    # 'yield_declarations',
+    # 'import_statements',
+    # 'promise_declarations',
+    # 'promise_all_and_then',
+    # 'default_parameters',
+    # 'rest_statements',
+    # 'spread_arguments',
+    # 'array_destructuring',
+    # 'object_destructuring',
+    # 'yield_declarations',
+    # 'optional_chain',
+    # 'template_string_expressions',
+    # 'null_coalesce_operators',
+    # 'hashbang_comments',
+    # 'private_fields',
+    # 'numeric_separator',
 ]
 
 plt.figure(figsize=(16, 8))

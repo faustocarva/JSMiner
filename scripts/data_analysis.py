@@ -1,8 +1,10 @@
 import pandas as pd
 from tabulate import tabulate
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Carregue os dados
-df = pd.read_csv('/home/walterlucas/Documents/JSMiner/scripts/results-without-gaps.csv')
+df = pd.read_csv('~/Documents/JSMiner/scripts/results-without-gaps.csv')
 
 df = df.drop(columns=['revision', 'errors'])
 df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
@@ -28,7 +30,36 @@ melted_df['total'] = pd.to_numeric(melted_df['total'], errors='coerce')
 melted_df = melted_df.sort_values(by='date')
 
 summary = melted_df.groupby('feature')['total'].agg(['median', 'mean', 'std', 'max', 'min']).reset_index()
-print(summary)
+# print(summary)
+
+tablefmt = 'latex_booktabs'  # Formato LaTeX
+colalign = ("l", "r", "r", "r", "r", "r")
+
+# Agora você pode continuar com a criação da tabela LaTeX
+table_summary = tabulate(summary, headers='keys', tablefmt=tablefmt, colalign=colalign)
+
+print(table_summary)
+
+# Filter out features with median equal to 0
+nonzero_median_summary = summary[summary['median'] != 0]
+
+# Create the boxplot
+sns.boxplot(x='feature', y='total', data=melted_df[melted_df['feature'].isin(nonzero_median_summary['feature'])])
+# Add labels
+plt.xlabel('Features')
+plt.ylabel('Total')
+
+# Calculate median by feature for non-zero features
+medians = nonzero_median_summary.set_index('feature')['median']
+
+# Add median labels to the plot
+for feature, median in medians.items():
+    plt.text(x=feature, y=median, s=round(median, 2), ha='center', va='bottom')
+
+plt.xticks(rotation=45)
+
+plt.show()
+
 
 pd.set_option('display.float_format', '{:.3f}'.format)
 melted_df['total'] = melted_df['total'].astype(int)
@@ -122,9 +153,7 @@ features_mapping = {
     'yield_declarations': 'Yield Declarations',
     'optional_chain': 'Optional Chain',
     'template_string_expressions': 'Template String Expressions',
-    'object_properties': 'Object Properties',
     'null_coalesce_operators': 'Null Coalesce Operators',
-    'regular_expressions': 'Regular Expressions',
     'hashbang_comments': 'Hashbang Comments',
     'exponentiation_assignments': 'Exponentiation Assignments',
     'private_fields': 'Private Fields',

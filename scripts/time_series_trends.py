@@ -5,7 +5,7 @@ import statsmodels.api as sm
 import seaborn as sns
 from statsmodels.nonparametric.smoothers_lowess import lowess
 
-df = pd.read_csv('/home/walterlucas/Documents/JSMiner/scripts/results-without-gaps.csv')
+df = pd.read_csv('~/Documents/JSMiner/scripts/results-without-gaps.csv')
 
 df = df.drop(columns=['revision', 'errors'])
 df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
@@ -58,9 +58,7 @@ features = [
     'yield_declarations',
     'optional_chain',
     'template_string_expressions',
-    'object_properties',
     'null_coalesce_operators',
-    'regular_expressions',
     'hashbang_comments',
     'private_fields',
     'numeric_separator',
@@ -114,11 +112,9 @@ def fit_and_plot_trends(df, feature, span):
     plt.xticks(x_ticks, total_by_month['year_month'].iloc[x_ticks].apply(lambda x: x[:4]), rotation=45)  # Exibe apenas o ano
 
     plt.legend()
-
-    # Exibir o gráfico
-    plt.savefig(f'trend_{feature}.pdf')
+    plt.savefig(f'graphs/trend_{feature}.pdf')
     plt.close()
 
 # Iterar sobre os recursos e ajustar modelos de regressão e gerar gráficos
 for feature in features:
-    fit_and_plot_trends(melted_df, feature, 0.1)
+    fit_and_plot_trends(melted_df, feature, 0.2)
