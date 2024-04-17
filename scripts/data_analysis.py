@@ -85,7 +85,7 @@ summary_project_features = df_filtered.merge(df_project_counts, on='feature', ho
 summary_project_features['percentage (%)'] = (summary_project_features['projects_with_occurrences'] / total_projects) * 100
 summary_project_features = summary_project_features[['feature', 'percentage (%)']]
 
-# print(summary_project_features)
+print(summary_project_features)
 
 #first adoption
 id_vars = ["project", "date", "statements", "files"]

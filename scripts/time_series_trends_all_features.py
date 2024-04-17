@@ -21,7 +21,8 @@ last_revision_idx = grouped['date'].idxmax()
 df_last_revision = df.loc[last_revision_idx]
 
 # Defina as variáveis de interesse
-id_vars = ["project", "date", "statements", "files", "year_month"]
+# id_vars = ["project", "date", "year_month", "files", "statements"]
+id_vars = ["project", "date", "year_month"]
 value_name = "total"
 var_name = "feature"
 
@@ -39,17 +40,19 @@ melted_df = melted_df.sort_values(by='year_month')
 
 # Lista de recursos (features)
 features = [
-    'async_declarations',
-    'await_declarations',
+    # 'async_declarations',
+    # 'await_declarations',
+    'files',
+    'statements',
     # 'const_declarations',
     # 'class_declarations',
-    # 'arrow_function_declarations',
+    'arrow_function_declarations',
     # 'let_declarations',
     # 'export_declarations',
     # 'yield_declarations',
     # 'import_statements',
     # 'promise_declarations',
-    # 'promise_all_and_then',
+    'promise_all_and_then',
     # 'default_parameters',
     # 'rest_statements',
     # 'spread_arguments',
@@ -84,8 +87,9 @@ for feature in features:
     X_sqrt = sm.add_constant(total_by_month.index)
     y_sqrt = total_by_month['sqrt_total']
     
+    
     # Cálculo da suavização loess
-    loess_result = lowess(total_by_month['sqrt_total'], total_by_month.index, frac=0.1)
+    loess_result = lowess(total_by_month['sqrt_total'], total_by_month.index, frac=0.25)
     total_by_month['loess'] = loess_result[:, 1]
 
     # Plotar a série temporal original normalizada
