@@ -304,23 +304,11 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitObjectLiteral(ObjectLiteralContext ctx) {
 		if (!ctx.isEmpty()) {
-			if(ctx.getText().contains("[") && ctx.getText().contains("]")){
-				totalObjectProperties.incrementAndGet();
-			}else if(!ctx.getText().contains(":")){
+			if(!ctx.getText().contains(":")){
 				totalObjectProperties.incrementAndGet();
 	        }
 		}
 		return super.visitObjectLiteral(ctx);
-	}
-
-	
-
-	@Override
-	public Void visitComputedPropertyExpressionAssignment(ComputedPropertyExpressionAssignmentContext ctx) {
-		if (!ctx.isEmpty()) {
-			totalObjectProperties.incrementAndGet();
-		}
-		return super.visitComputedPropertyExpressionAssignment(ctx);
 	}
 
 	@Override
@@ -329,7 +317,6 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 			String regexText = ctx.RegularExpressionLiteral().getText();
 			// Verifica se a expressão regular contém expressões nomeadas ou lookbehind
 			if (regexText.contains("?<") || regexText.contains("(?<=")) {
-				System.out.println("RegularExpressionLiteral: " + regexText);
 				totalRegularExpressions.incrementAndGet();
 			}
 		}
