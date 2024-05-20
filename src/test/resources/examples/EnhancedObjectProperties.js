@@ -7,21 +7,37 @@
 
 obj = { x, y }
 
-//------------------------------------------------------------------------------
-// Computed Property Names
-// Support for computed names in object property definitions.
-// http://es6-features.org/#ComputedPropertyNames
-//------------------------------------------------------------------------------
+obj = {
+  foo (a, b) {
+  },
+  *quux (x, y) {
+  }
+}
+
+let uname = 'Anil',  
+    udivision = 'First';  
+   
+let user = {  
+   uname,  
+   udivision  
+};  
+console.log(user.uname);  
+console.log(user.udivision);
+
+var department = 'dep_name';  
+var emp = {  
+    id : 102,  
+    name : 'Anil',  
+    [department]:'Production'  
+}  
+console.log(emp);
+
 
 let obj = {
     foo: "bar",
     [ "baz" + quux() ]: 42
 }
 
-var obj = {
-    foo: "bar"
-};
-obj[ "baz" + quux() ] = 42;
 
 //------------------------------------------------------------------------------
 // Method Properties
@@ -29,13 +45,6 @@ obj[ "baz" + quux() ] = 42;
 //   functions and generator functions.
 // http://es6-features.org/#MethodProperties
 //------------------------------------------------------------------------------
-
-obj = {
-    foo (a, b) {
-    },
-    *quux (x, y) {
-    }
-}
 
 
 // Exemplo de definição de propriedades de objetos no ECMAScript 3
@@ -66,3 +75,8 @@ var obj = {
 console.log(obj.prop1); // Output: foo
 console.log(obj.prop2); // Output: bar
 obj.method(); // Output: Método
+
+var obj = {
+  foo: "bar"
+};
+obj[ "baz" + quux() ] = 42;

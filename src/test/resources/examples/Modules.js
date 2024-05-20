@@ -55,3 +55,11 @@ export function then(resolve) {
   console.log("then() called");
   resolve(1);
 }
+
+export default function add(a, b) {
+  return a + b;
+}
+
+import { func1, func2 } from './module1';
+import * as module2 from './module2';
+import defaultFunc from './module3';

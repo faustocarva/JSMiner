@@ -20,3 +20,14 @@ var i = {
 var d = e?.f?.g;
 var h = i?.j();
 var k = l?.['m']?.n?.['o'];
+
+// comentário que não deve ser capturado ?.?.?. com optional chain
+
+function greet(name) {
+  // Verifica se o objeto 'person' existe antes de acessar sua propriedade 'name'
+  return "Hello, ${name?.toUpperCase()}!";
+}
+
+function printData(data) {
+  console.log("Data: ${data?.toString() ?? 'N/A'}");
+}

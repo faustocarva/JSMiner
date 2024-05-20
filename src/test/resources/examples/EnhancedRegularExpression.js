@@ -31,9 +31,11 @@ parser("Foo 1 Bar 7 Baz 42", [
     { pattern: /^\s*/y,         action: (match) => {}            }
 ])
 
+// Expressão regular com lookbehind:
 const regex1 = /(?<=@)\w+/;
 const match1 = regex1.exec('user@example.com');
 
+// Expressão regular com expressões nomeadas:
 const regex = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const match = regex.exec('2022-01-01');
 
