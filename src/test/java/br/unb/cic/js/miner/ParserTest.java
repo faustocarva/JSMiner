@@ -353,6 +353,20 @@ public class ParserTest {
     }
 
     @Test
+    public void testComputedProperties() {
+        try {
+            String content = loadContent("examples/EnhancedObjectProperties.js");
+            JavaScriptParser.ProgramContext p = parser.parse(content);
+            JSVisitor visitor = new JSVisitor();
+            p.accept(visitor);
+            assertEquals(2, visitor.getTotalComputedProperties().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
     public void testRegularExpressions() {
         try {
             String content = loadContent("examples/EnhancedRegularExpression.js");

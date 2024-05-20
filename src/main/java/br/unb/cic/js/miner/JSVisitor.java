@@ -42,6 +42,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalPrivateFields = new AtomicInteger(0);
 	AtomicInteger totalNumericLiteralSeparators = new AtomicInteger(0);
 	AtomicInteger totalBigInt = new AtomicInteger(0);
+	AtomicInteger totalComputedProperties = new AtomicInteger(0);
 
 	AtomicInteger totalStatements = new AtomicInteger(0);
 
@@ -304,7 +305,9 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitObjectLiteral(ObjectLiteralContext ctx) {
 		if (!ctx.isEmpty()) {
-			if(!ctx.getText().contains(":")){
+			if(ctx.getText().contains("[") && ctx.getText().contains("]")){
+				totalComputedProperties.incrementAndGet();
+			}else if(!ctx.getText().contains(":")){
 				totalObjectProperties.incrementAndGet();
 	        }
 		}

@@ -273,6 +273,8 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("big-int").value(visitor.getTotalBigInt().get())
 					.build());
+			metrics.add(Metric.builder().name("computed-property").value(visitor.getTotalComputedProperties().get())
+					.build());
 			
 			metrics.add(Metric.builder().name("errors").value(errors.size()).build());
 			metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());

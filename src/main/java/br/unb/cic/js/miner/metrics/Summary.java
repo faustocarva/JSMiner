@@ -58,6 +58,7 @@ public class Summary {
                 .append(",private-fields")
                 .append(",numeric-separator")
                 .append(",big-int")
+                .append(",computed-property")
                 .append(",errors")
                 .append(",statements\n");
 
