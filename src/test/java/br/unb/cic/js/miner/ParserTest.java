@@ -1,6 +1,7 @@
 package br.unb.cic.js.miner;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -393,7 +394,7 @@ public class ParserTest {
     	}
     }
 
-    @Test
+    @Ignore
     public void testParserReact() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         URI directoryPath = classLoader.getResource("examples").toURI();

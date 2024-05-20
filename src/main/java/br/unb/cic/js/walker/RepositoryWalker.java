@@ -4,6 +4,7 @@ import br.unb.cic.js.date.Formatter;
 import br.unb.cic.js.date.Interval;
 import br.unb.cic.js.miner.JSParser;
 import br.unb.cic.js.miner.JSVisitor;
+import br.unb.cic.js.miner.JSVisitor.Feature;
 import br.unb.cic.js.miner.metrics.Metric;
 import br.unb.cic.js.miner.metrics.Profiler;
 import br.unb.cic.js.miner.metrics.Summary;
@@ -56,7 +57,7 @@ public final class RepositoryWalker {
 		repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
 		val head = RepositoryWalkerGit.head(repository);
-		val revisions = RepositoryWalkerGit.revisions(repository,merges);
+		val revisions = RepositoryWalkerGit.revisions(repository, merges);
 
 		val commits = new HashMap<Date, ObjectId>();
 		val commitDates = new HashSet<Date>(); // Use a HashSet for unique dates
@@ -115,8 +116,8 @@ public final class RepositoryWalker {
 		val average = profiler.average();
 		val total = (double) profiler.total() / 1000.0;
 
-		logger.info("{} -- finished, took {}ms in average to collect each commit and {}s in total", project,
-				average, total);
+		logger.info("{} -- finished, took {}ms in average to collect each commit and {}s in total", project, average,
+				total);
 
 		return summaries;
 	}
@@ -137,7 +138,7 @@ public final class RepositoryWalker {
 		repository = FileRepositoryBuilder.create(path.toAbsolutePath().resolve(".git").toFile());
 
 		val head = RepositoryWalkerGit.head(repository);
-		val revisions = RepositoryWalkerGit.revisions(repository,merges);
+		val revisions = RepositoryWalkerGit.revisions(repository, merges);
 
 		val commits = new HashMap<Date, ObjectId>();
 
@@ -204,7 +205,7 @@ public final class RepositoryWalker {
 					try {
 						val content = new String(Files.readAllBytes(p));
 						val program = parser.parse(content);
-
+						visitor.setFile(p.getFileName().toString());
 						program.accept(visitor);
 
 					} catch (Exception ex) {
@@ -252,30 +253,82 @@ public final class RepositoryWalker {
 					.build());
 			metrics.add(Metric.builder().name("object-destructuring").value(visitor.getTotalObjectDestructuring().get())
 					.build());
-			
-			metrics.add(Metric.builder().name("optional-chain").value(visitor.getTotalOptionalChain().get())
-					.build());
-			metrics.add(Metric.builder().name("template-string-expressions").value(visitor.getTotalTemplateStringExpressions().get())
-					.build());
-			metrics.add(Metric.builder().name("object-properties").value(visitor.getTotalObjectProperties().get())
-					.build());
-			metrics.add(Metric.builder().name("null-coalesce-operators").value(visitor.getTotalNullCoalesceOperators().get())
-					.build());
+
+			metrics.add(Metric.builder().name("optional-chain").value(visitor.getTotalOptionalChain().get()).build());
+			metrics.add(Metric.builder().name("template-string-expressions")
+					.value(visitor.getTotalTemplateStringExpressions().get()).build());
+			metrics.add(
+					Metric.builder().name("object-properties").value(visitor.getTotalObjectProperties().get()).build());
+			metrics.add(Metric.builder().name("null-coalesce-operators")
+					.value(visitor.getTotalNullCoalesceOperators().get()).build());
 			metrics.add(Metric.builder().name("regular-expressions").value(visitor.getTotalRegularExpressions().get())
 					.build());
-			metrics.add(Metric.builder().name("hashbang-comments").value(visitor.getTotalHashBangLines().get())
-					.build());
-			metrics.add(Metric.builder().name("exponentiation-assignments").value(visitor.getTotalExponentiationAssignments().get())
-					.build());
-			metrics.add(Metric.builder().name("private-fields").value(visitor.getTotalPrivateFields().get())
-					.build());
-			metrics.add(Metric.builder().name("numeric-separator").value(visitor.getTotalNumericLiteralSeparators().get())
-					.build());
-			metrics.add(Metric.builder().name("big-int").value(visitor.getTotalBigInt().get())
-					.build());
+			metrics.add(
+					Metric.builder().name("hashbang-comments").value(visitor.getTotalHashBangLines().get()).build());
+			metrics.add(Metric.builder().name("exponentiation-assignments")
+					.value(visitor.getTotalExponentiationAssignments().get()).build());
+			metrics.add(Metric.builder().name("private-fields").value(visitor.getTotalPrivateFields().get()).build());
+			metrics.add(Metric.builder().name("numeric-separator")
+					.value(visitor.getTotalNumericLiteralSeparators().get()).build());
+			metrics.add(Metric.builder().name("big-int").value(visitor.getTotalBigInt().get()).build());
 			metrics.add(Metric.builder().name("computed-property").value(visitor.getTotalComputedProperties().get())
 					.build());
-			
+
+			metrics.add(Metric.builder().name("async-declarations-files")
+					.value(visitor.occurrences(Feature.AsyncDeclarations)).build());
+			metrics.add(Metric.builder().name("await-declarations-files")
+					.value(visitor.occurrences(Feature.AwaitDeclarations)).build());
+			metrics.add(Metric.builder().name("const-declarations-files")
+					.value(visitor.occurrences(Feature.ConstDeclaration)).build());
+			metrics.add(Metric.builder().name("class-declarations-files")
+					.value(visitor.occurrences(Feature.ClassDeclarations)).build());
+			metrics.add(Metric.builder().name("arrow-function-declarations-files")
+					.value(visitor.occurrences(Feature.ArrowArrowDeclarations)).build());
+			metrics.add(Metric.builder().name("let-declarations-files")
+					.value(visitor.occurrences(Feature.LetDeclarations)).build());
+			metrics.add(Metric.builder().name("export-declarations-files")
+					.value(visitor.occurrences(Feature.ExportDeclarations)).build());
+			metrics.add(Metric.builder().name("yield-declarations-files")
+					.value(visitor.occurrences(Feature.YieldDeclarations)).build());
+			metrics.add(Metric.builder().name("import-statements-files")
+					.value(visitor.occurrences(Feature.ImportStatements)).build());
+			metrics.add(Metric.builder().name("promise-declarations-files")
+					.value(visitor.occurrences(Feature.NewPromises)).build());
+			metrics.add(Metric.builder().name("promise-all-and-then-files")
+					.value(visitor.occurrences(Feature.PromiseAllAndThenIdiom)).build());
+			metrics.add(Metric.builder().name("default-parameters-files")
+					.value(visitor.occurrences(Feature.DefaultParameters)).build());
+			metrics.add(Metric.builder().name("rest-statements-files")
+					.value(visitor.occurrences(Feature.RestStatements)).build());
+			metrics.add(Metric.builder().name("spread-arguments-files")
+					.value(visitor.occurrences(Feature.SpreadArguments)).build());
+			metrics.add(Metric.builder().name("array-destructuring-files")
+					.value(visitor.occurrences(Feature.ArrayDestructuring)).build());
+			metrics.add(Metric.builder().name("object-destructuring-files")
+					.value(visitor.occurrences(Feature.ObjectDestructuring)).build());
+
+			metrics.add(Metric.builder().name("optional-chain-files").value(visitor.occurrences(Feature.OptionalChain))
+					.build());
+			metrics.add(Metric.builder().name("template-string-expressions-files")
+					.value(visitor.occurrences(Feature.TemplateStringExpressions)).build());
+			metrics.add(Metric.builder().name("object-properties-files")
+					.value(visitor.occurrences(Feature.ObjectProperties)).build());
+			metrics.add(Metric.builder().name("null-coalesce-operators-files")
+					.value(visitor.occurrences(Feature.NullCoalesceOperators)).build());
+			metrics.add(Metric.builder().name("regular-expressions-files")
+					.value(visitor.occurrences(Feature.RegularExpressions)).build());
+			metrics.add(Metric.builder().name("hashbang-comments-files")
+					.value(visitor.occurrences(Feature.HashBangLines)).build());
+			metrics.add(Metric.builder().name("exponentiation-assignments-files")
+					.value(visitor.occurrences(Feature.ExponentiationAssignments)).build());
+			metrics.add(Metric.builder().name("private-fields-files").value(visitor.occurrences(Feature.PrivateFields))
+					.build());
+			metrics.add(Metric.builder().name("numeric-separator-files")
+					.value(visitor.occurrences(Feature.NumericLiteralSeparators)).build());
+			metrics.add(Metric.builder().name("big-int-files").value(visitor.occurrences(Feature.BigInt)).build());
+			metrics.add(Metric.builder().name("computed-property-files")
+					.value(visitor.occurrences(Feature.ComputedProperties)).build());
+
 			metrics.add(Metric.builder().name("errors").value(errors.size()).build());
 			metrics.add(Metric.builder().name("statements").value(visitor.getTotalStatements().get()).build());
 

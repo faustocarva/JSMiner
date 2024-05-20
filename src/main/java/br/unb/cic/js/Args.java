@@ -10,7 +10,7 @@ public class Args {
     public String project = "";
 
     @Parameter(names = {"-s", "--steps"}, description = "The delta interval through each commit")
-    public Integer steps = 1;
+    public Integer steps = 7;
 
     @Parameter(names = {"-pt", "--project-threads"}, description = "How many threads to use when processing multiple projects")
     public Integer threadsProjects = 1;
@@ -19,10 +19,10 @@ public class Args {
     public Integer threadsFiles = Runtime.getRuntime().availableProcessors();
 
     @Parameter(names = {"-id", "--initial-date"}, description = "When to start walking a project (dd-mm-yyyy)")
-    public String initialDate = "25-06-2023";
+    public String initialDate = "01-01-2012";
 
     @Parameter(names = {"-ed", "--end-date"}, description = "When to stop walking the project (dd-mm-yyyy)")
-    public String endDate = "28-06-2023";
+    public String endDate = "30-06-2023";
 
     @Parameter(names = {"--hash"}, description = "A commit hash to be verified")
     public String[] hash = {};

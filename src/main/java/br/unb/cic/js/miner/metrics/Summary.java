@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import br.unb.cic.js.miner.JSVisitor.Feature;
+
 /**
  * Summary represents a collection of metrics for a given project, at a given date and on a given revision.
  */
@@ -59,11 +61,39 @@ public class Summary {
                 .append(",numeric-separator")
                 .append(",big-int")
                 .append(",computed-property")
+            	.append(",async-declarations-files")
+            	.append(",await-declarations-files")
+            	.append(",const-declarations-files")
+            	.append(",class-declarations-files")
+            	.append(",arrow-function-declarations-files")
+            	.append(",let-declarations-files")
+            	.append(",export-declarations-files")
+            	.append(",yield-declarations-files")
+            	.append(",import-statements-files")
+            	.append(",promise-declarations-files")
+            	.append(",promise-all-and-then-files")
+            	.append(",default-parameters-files")
+            	.append(",rest-statements-files")
+                .append(",spread-arguments-files")
+            	.append(",array-destructuring-files")
+            	.append(",object-destructuring-files")
+            	.append(",optional-chain-files")
+            	.append(",template-string-expressions-files")
+            	.append(",object-properties-files")
+            	.append(",null-coalesce-operators-files")
+            	.append(",regular-expressions-files")
+            	.append(",hashbang-comments-files")
+            	.append(",exponentiation-assignments-files")
+            	.append(",private-fields-files")
+            	.append(",numeric-separator-files")
+            	.append(",big-int-files")
+            	.append(",computed-property-files")
                 .append(",errors")
                 .append(",statements\n");
 
         return h.toString();
     }
+    
 
     public String values() {
         if (metrics == null) {

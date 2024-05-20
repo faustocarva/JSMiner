@@ -4,7 +4,11 @@ import br.unb.cic.js.miner.JavaScriptParser.*;
 import lombok.Getter;
 import lombok.val;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
@@ -14,6 +18,61 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	private static final String ALL = "all";
 	private static final String PROMISE = "Promise";
 	private static final String NUMERIC_SEPARATOR = "_";
+	private String fileName = "example.js";
+	
+	public enum Feature {
+			ArrowArrowDeclarations,
+			AsyncDeclarations,
+			AwaitDeclarations,
+			LetDeclarations,
+			ConstDeclaration,
+			ClassDeclarations,
+			YieldDeclarations,
+			ExportDeclarations,
+			ImportStatements,
+			RestStatements,
+			NewPromises,
+			PromiseAllAndThenIdiom,
+			ArrayDestructuring,
+			ObjectDestructuring,
+			DefaultParameters,
+			SpreadArguments,
+			OptionalChain,
+			TemplateStringExpressions,
+			ObjectProperties,
+			RegularExpressions,
+			NullCoalesceOperators,
+			HashBangLines,
+			ExponentiationAssignments,
+			PrivateFields,
+			NumericLiteralSeparators,
+			BigInt,
+			ComputedProperties,
+			Statements
+	}
+	
+	private HashMap<Feature, Set<String>> featureOccurrences;
+	
+	public JSVisitor() {
+		super();
+		featureOccurrences = new HashMap<>();
+		for (Feature f : Feature.values()) {
+			featureOccurrences.put(f, new HashSet());
+		}
+	}
+	
+	public void setFile(String fileName) {
+		this.fileName = fileName;
+	}
+	
+	public int occurrences(Feature f) {
+		int res = 0;
+		if(featureOccurrences.containsKey(f)) {
+			res = featureOccurrences.get(f).size();
+		}
+		return res;
+	}
+	
 
 	AtomicInteger totalArrowDeclarations = new AtomicInteger(0);
 	AtomicInteger totalAsyncDeclarations = new AtomicInteger(0);
@@ -31,7 +90,6 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalObjectDestructuring = new AtomicInteger(0);
 	AtomicInteger totalDefaultParameters = new AtomicInteger(0);
 	AtomicInteger totalSpreadArguments = new AtomicInteger(0);
-
 	AtomicInteger totalOptionalChain = new AtomicInteger(0);
 	AtomicInteger totalTemplateStringExpressions = new AtomicInteger(0);
 	AtomicInteger totalObjectProperties = new AtomicInteger(0);
@@ -43,37 +101,46 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	AtomicInteger totalNumericLiteralSeparators = new AtomicInteger(0);
 	AtomicInteger totalBigInt = new AtomicInteger(0);
 	AtomicInteger totalComputedProperties = new AtomicInteger(0);
-
 	AtomicInteger totalStatements = new AtomicInteger(0);
+	
+	
+	private void changeFilesOccurrences(Feature f) {
+		Set<String> files = featureOccurrences.getOrDefault(f, new HashSet<>());
+		files.add(fileName);
+		featureOccurrences.put(f, files);
+	}
 
 	@Override
 	public Void visitStatement(StatementContext ctx) {
-		val statements = new ArrayList<Boolean>();
-
-		statements.add(ctx.variableStatement() != null);
-		statements.add(ctx.importStatement() != null);
-		statements.add(ctx.block() != null);
-		statements.add(ctx.exportStatement() != null);
-		statements.add(ctx.emptyStatement_() != null);
-		statements.add(ctx.classDeclaration() != null);
-		statements.add(ctx.expressionStatement() != null);
-		statements.add(ctx.ifStatement() != null);
-		statements.add(ctx.iterationStatement() != null);
-		statements.add(ctx.continueStatement() != null);
-		statements.add(ctx.breakStatement() != null);
-		statements.add(ctx.returnStatement() != null);
-		statements.add(ctx.yieldStatement() != null);
-		statements.add(ctx.withStatement() != null);
-		statements.add(ctx.labelledStatement() != null);
-		statements.add(ctx.switchStatement() != null);
-		statements.add(ctx.throwStatement() != null);
-		statements.add(ctx.tryStatement() != null);
-		statements.add(ctx.debuggerStatement() != null);
-		statements.add(ctx.functionDeclaration() != null);
-
-		if (statements.stream().reduce((m, n) -> m || n).orElse(false)) {
-			totalStatements.incrementAndGet();
-		}
+		
+		totalStatements.incrementAndGet();
+		
+//		val statements = new ArrayList<Boolean>();
+//
+//		statements.add(ctx.variableStatement() != null);
+//		statements.add(ctx.importStatement() != null);
+//		statements.add(ctx.block() != null);
+//		statements.add(ctx.exportStatement() != null);
+//		statements.add(ctx.emptyStatement_() != null);
+//		statements.add(ctx.classDeclaration() != null);
+//		statements.add(ctx.expressionStatement() != null);
+//		statements.add(ctx.ifStatement() != null);
+//		statements.add(ctx.iterationStatement() != null);
+//		statements.add(ctx.continueStatement() != null);
+//		statements.add(ctx.breakStatement() != null);
+//		statements.add(ctx.returnStatement() != null);
+//		statements.add(ctx.yieldStatement() != null);
+//		statements.add(ctx.withStatement() != null);
+//		statements.add(ctx.labelledStatement() != null);
+//		statements.add(ctx.switchStatement() != null);
+//		statements.add(ctx.throwStatement() != null);
+//		statements.add(ctx.tryStatement() != null);
+//		statements.add(ctx.debuggerStatement() != null);
+//		statements.add(ctx.functionDeclaration() != null);
+//
+//		if (statements.stream().reduce((m, n) -> m || n).orElse(false)) {
+//			totalStatements.incrementAndGet();
+//		}
 
 		return super.visitStatement(ctx);
 	}
@@ -91,6 +158,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 
 		return super.visitFunctionDeclaration(ctx);
@@ -99,8 +167,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	@Override
 	public Void visitArrowFunction(ArrowFunctionContext ctx) {
 		totalArrowDeclarations.incrementAndGet();
+		changeFilesOccurrences(Feature.ArrowArrowDeclarations);
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 		return super.visitArrowFunction(ctx);
 	}
@@ -109,6 +179,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitAnonymousFunctionDecl(AnonymousFunctionDeclContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 		return super.visitAnonymousFunctionDecl(ctx);
 	}
@@ -117,6 +188,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitFunctionProperty(FunctionPropertyContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 		return super.visitFunctionProperty(ctx);
 	}
@@ -125,6 +197,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitYieldExpression(YieldExpressionContext ctx) {
 		if (ctx.yieldStatement() != null) {
 			totalYieldDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.YieldDeclarations);
 		}
 		return super.visitYieldExpression(ctx);
 	}
@@ -133,6 +206,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitClassDeclaration(ClassDeclarationContext ctx) {
 		if (ctx.Class() != null) {
 			totalClassDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.ClassDeclarations);
 		}
 		return super.visitClassDeclaration(ctx);
 	}
@@ -141,6 +215,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitExportDeclaration(ExportDeclarationContext ctx) {
 		if (ctx.Export() != null) {
 			totalExportDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.ExportDeclarations);
 		}
 		return super.visitExportDeclaration(ctx);
 	}
@@ -150,6 +225,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitImportExpression(ImportExpressionContext ctx) {
 		if (ctx.Import() != null) {
 			totalImportStatements.incrementAndGet();
+			changeFilesOccurrences(Feature.ImportStatements);
 		}
 		return super.visitImportExpression(ctx);
 	}
@@ -158,6 +234,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitImportStatement(ImportStatementContext ctx) {
 		if (ctx.Import() != null) {
 			totalImportStatements.incrementAndGet();
+			changeFilesOccurrences(Feature.ImportStatements);
 		}
 		return super.visitImportStatement(ctx);
 	}
@@ -166,6 +243,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitLastFormalParameterArg(LastFormalParameterArgContext ctx) {
 		if (ctx.Ellipsis() != null) {
 			totalRestStatements.incrementAndGet();
+			changeFilesOccurrences(Feature.RestStatements);
 		}
 		return super.visitLastFormalParameterArg(ctx);
 	}
@@ -174,6 +252,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitArrayElement(ArrayElementContext ctx) {
 		if (ctx.Ellipsis() != null) {
 			totalSpreadArguments.incrementAndGet();
+			changeFilesOccurrences(Feature.SpreadArguments);
 		}
 		return super.visitArrayElement(ctx);
 	}
@@ -182,6 +261,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitPropertyShorthand(PropertyShorthandContext ctx) {
 		if (ctx.Ellipsis() != null) {
 			totalSpreadArguments.incrementAndGet();
+			changeFilesOccurrences(Feature.SpreadArguments);
 		}
 		return super.visitPropertyShorthand(ctx);
 	}
@@ -190,6 +270,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitArgument(ArgumentContext ctx) {
 		if (ctx.Ellipsis() != null) {
 			totalSpreadArguments.incrementAndGet();
+			changeFilesOccurrences(Feature.SpreadArguments);
 		}
 		return super.visitArgument(ctx);
 	}
@@ -198,9 +279,11 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitVarModifier(VarModifierContext ctx) {
 		if (ctx.Const() != null) {
 			totalConstDeclaration.incrementAndGet();
+			changeFilesOccurrences(Feature.ConstDeclaration);
 		}
 		if (ctx.let_() != null) {
 			totalLetDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.LetDeclarations);
 		}
 		return super.visitVarModifier(ctx);
 	}
@@ -209,6 +292,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitAwaitExpression(AwaitExpressionContext ctx) {
 		if (ctx.Await() != null) {
 			totalAwaitDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AwaitDeclarations);
 		}
 		return super.visitAwaitExpression(ctx);
 	}
@@ -217,6 +301,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitIdentifier(IdentifierContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 		return super.visitIdentifier(ctx);
 	}
@@ -227,6 +312,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitMethodDefinition(MethodDefinitionContext ctx) {
 		if (ctx.Async() != null) {
 			totalAsyncDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AsyncDeclarations);
 		}
 		return super.visitMethodDefinition(ctx);
 	}
@@ -235,10 +321,12 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitNewExpression(NewExpressionContext ctx) {
 		if (ctx.singleExpression() != null && ctx.singleExpression().getText().equals(PROMISE)) {
 			totalNewPromises.incrementAndGet();
+			changeFilesOccurrences(Feature.NewPromises);
 		}
 		if (ctx.identifier() != null && ctx.identifier().Identifier() != null
 				&& ctx.identifier().Identifier().getText().equals(PROMISE)) {
 			totalNewPromises.incrementAndGet();
+			changeFilesOccurrences(Feature.NewPromises);
 		}
 
 		return super.visitNewExpression(ctx);
@@ -251,6 +339,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.singleExpression().getText().contains(PROMISE) && ctx.singleExpression().getText().contains(ALL)
 				&& ctx.singleExpression().getText().contains(THEN)) {
 			totalPromiseAllAndThenIdiom.incrementAndGet();
+			changeFilesOccurrences(Feature.PromiseAllAndThenIdiom);
 		}
 		return super.visitArgumentsExpression(ctx);
 	}
@@ -259,8 +348,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitAssignmentExpression(AssignmentExpressionContext ctx) {
 		if (ctx.singleExpression().get(0) instanceof ArrayLiteralExpressionContext) {
 			totalArrayDestructuring.incrementAndGet();
+			changeFilesOccurrences(Feature.ArrayDestructuring);
 		} else if (ctx.singleExpression().get(0) instanceof ObjectLiteralExpressionContext) {
 			totalObjectDestructuring.incrementAndGet();
+			changeFilesOccurrences(Feature.ObjectDestructuring);
 		}
 		return super.visitAssignmentExpression(ctx);
 	}
@@ -270,8 +361,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (ctx.singleExpression() != null && !ctx.assignable().isEmpty()) {
 			if (ctx.assignable().arrayLiteral() != null) {
 				totalArrayDestructuring.incrementAndGet();
+				changeFilesOccurrences(Feature.ArrayDestructuring);
 			} else if (ctx.assignable().objectLiteral() != null) {
 				totalObjectDestructuring.incrementAndGet();
+				changeFilesOccurrences(Feature.ObjectDestructuring);
 			}
 		}
 		return super.visitVariableDeclaration(ctx);
@@ -281,6 +374,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitFormalParameterArg(FormalParameterArgContext ctx) {
 		if (ctx.singleExpression() != null) {
 			totalDefaultParameters.incrementAndGet();
+			changeFilesOccurrences(Feature.DefaultParameters);
 		}
 		return super.visitFormalParameterArg(ctx);
 	}
@@ -290,6 +384,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitOptionalChainExpression(OptionalChainExpressionContext ctx) {
 		if (!ctx.isEmpty()) {
 			totalOptionalChain.incrementAndGet();
+			changeFilesOccurrences(Feature.OptionalChain);
 		}
 		return super.visitOptionalChainExpression(ctx);
 	}
@@ -298,6 +393,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitTemplateStringLiteral(TemplateStringLiteralContext ctx) {
 		if (ctx.templateStringAtom() != null) {
 			totalTemplateStringExpressions.incrementAndGet();
+			changeFilesOccurrences(Feature.TemplateStringExpressions);
 		}
 		return super.visitTemplateStringLiteral(ctx);
 	}
@@ -307,8 +403,10 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		if (!ctx.isEmpty()) {
 			if(ctx.getText().contains("[") && ctx.getText().contains("]")){
 				totalComputedProperties.incrementAndGet();
+				changeFilesOccurrences(Feature.ComputedProperties);
 			}else if(!ctx.getText().contains(":")){
 				totalObjectProperties.incrementAndGet();
+				changeFilesOccurrences(Feature.ObjectProperties);
 	        }
 		}
 		return super.visitObjectLiteral(ctx);
@@ -321,6 +419,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 			// Verifica se a expressão regular contém expressões nomeadas ou lookbehind
 			if (regexText.contains("?<") || regexText.contains("(?<=")) {
 				totalRegularExpressions.incrementAndGet();
+				changeFilesOccurrences(Feature.RegularExpressions);
 			}
 		}
 		return super.visitLiteral(ctx);
@@ -330,6 +429,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitCoalesceExpression(CoalesceExpressionContext ctx) {
 		if (ctx.NullCoalesce() != null) {
 			totalNullCoalesceOperators.incrementAndGet();
+			changeFilesOccurrences(Feature.NullCoalesceOperators);
 		}
 		return super.visitCoalesceExpression(ctx);
 	}
@@ -339,6 +439,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 		if (ctx.Await() != null) {
 			totalAwaitDeclarations.incrementAndGet();
+			changeFilesOccurrences(Feature.AwaitDeclarations);
 		}
 		return super.visitForOfStatement(ctx);
 	}
@@ -348,6 +449,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 
 		if (ctx.HashBangLine() != null) {
 			totalHashBangLines.incrementAndGet();
+			changeFilesOccurrences(Feature.HashBangLines);
 		}
 
 		return super.visitProgram(ctx);
@@ -357,6 +459,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitAssignmentOperator(AssignmentOperatorContext ctx) {
 		if (ctx.PowerAssign()!=null) {
 			totalExponentiationAssignments.incrementAndGet();
+			changeFilesOccurrences(Feature.ExponentiationAssignments);
 		}
 		return super.visitAssignmentOperator(ctx);
 	}
@@ -365,6 +468,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitFieldDefinition(FieldDefinitionContext ctx) {
 		if (ctx.classElementName().privateIdentifier() != null) {
 			totalPrivateFields.incrementAndGet();
+			changeFilesOccurrences(Feature.PrivateFields);
 		}
 		return super.visitFieldDefinition(ctx);
 	}
@@ -374,6 +478,7 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 		
 		if (ctx.literal().numericLiteral() != null && ctx.literal().getText().contains(NUMERIC_SEPARATOR)) {
 			totalNumericLiteralSeparators.incrementAndGet();
+			changeFilesOccurrences(Feature.NumericLiteralSeparators);
 		}
 		return super.visitLiteralExpression(ctx);
 	}
@@ -382,13 +487,9 @@ public class JSVisitor extends JavaScriptParserBaseVisitor<Void> {
 	public Void visitBigintLiteral(BigintLiteralContext ctx) {
 		if (!ctx.isEmpty()) {
 			totalBigInt.incrementAndGet();
+			changeFilesOccurrences(Feature.BigInt);
 		}
 		return super.visitBigintLiteral(ctx);
 	}
 
-	@Override
-	public Void visitFunctionExpression(FunctionExpressionContext ctx) {
-		
-		return super.visitFunctionExpression(ctx);
-	}
 }
